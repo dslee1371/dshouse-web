@@ -1,0 +1,35 @@
+---
+import "../styles/global.css";  // ✅ Astro는 이렇게 임포트하는 게 정석
+const { title = "이동수하우스", description = "생활·환경을 위한 공공데이터 기반 IT 솔루션" } = Astro.props;
+---
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" href="/favicon.ico" />
+  </head>
+  <body class="min-h-screen bg-white">
+    <header class="border-b">
+      <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
+        <a href="/" class="font-semibold">이동수하우스</a>
+        <nav class="flex gap-6 text-sm">
+          <a href="/about" class="hover:underline">About</a>
+          <a href="/services" class="hover:underline">Services</a>
+          <a href="/works" class="hover:underline">Works</a>
+          <a href="/contact" class="hover:underline">Contact</a>
+        </nav>
+      </div>
+    </header>
+    <main class="mx-auto max-w-6xl px-4 py-10">
+      <slot />
+    </main>
+    <footer class="mt-16 border-t">
+      <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-500">
+        © {new Date().getFullYear()} 이동수하우스 · 생활과 환경을 위한 IT 솔루션
+      </div>
+    </footer>
+    <link rel="stylesheet" href="/src/styles/global.css" />
+  </body>
+</html>

@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Contact | 이동수하우스">
+  <h1 class="text-2xl font-bold">문의하기</h1>
+  <form action="https://formspree.io/f/xqalvjwd" method="POST" class="mt-6 max-w-xl space-y-4">
+    <input name="name" placeholder="이름" required class="w-full border rounded-lg px-4 py-3" />
+    <input name="email" type="email" placeholder="이메일" required class="w-full border rounded-lg px-4 py-3" />
+    <textarea name="message" placeholder="문의 내용" rows="6" required class="w-full border rounded-lg px-4 py-3"></textarea>
+    <button type="submit" class="rounded-lg border px-6 py-3">보내기</button>
+  </form>
+
+  <div class="mt-10 text-sm text-gray-600">
+    이메일: qwer013777@gmail.com · 전화: 010-6645-0137
+  </div>
+</BaseLayout>
