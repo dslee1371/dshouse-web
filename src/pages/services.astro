@@ -2,23 +2,25 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 <BaseLayout title="Services | 이동수하우스">
-  <h1 class="text-2xl font-bold">서비스</h1>
+  <h1 class="text-3xl font-bold">서비스</h1>
+  <p class="mt-2 text-gray-600 dark:text-gray-300">현장과 데이터를 연결하는 실용 중심 접근</p>
+
   <div class="grid md:grid-cols-2 gap-6 mt-6">
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">생활·환경 맞춤 IT 코드 개발</h3>
-      <p class="mt-2 text-gray-700">스마트홈, 에너지 사용량 모니터링, 예약 시스템 등</p>
+    <div class="card">
+      <h3 class="font-semibold">생활·환경 맞춤 개발</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">스마트홈, 에너지 모니터링, 예약·알림 시스템</p>
     </div>
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">공공데이터 기반 서비스</h3>
-      <p class="mt-2 text-gray-700">대기질/교통/날씨/부동산 데이터 활용 플랫폼</p>
+    <div class="card">
+      <h3 class="font-semibold">공공데이터 서비스</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">대기질/교통/날씨/부동산 데이터 활용 플랫폼</p>
     </div>
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">IT + 오프라인 융합 솔루션</h3>
-      <p class="mt-2 text-gray-700">빌딩/상가/교회/주민센터 등 맞춤 관리 시스템</p>
+    <div class="card">
+      <h3 class="font-semibold">IT + 오프라인 융합</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">교회/주민센터/상가 운영에 맞춘 관리 대시보드</p>
     </div>
-    <div class="p-6 border rounded-xl">
+    <div class="card">
       <h3 class="font-semibold">운영·유지보수</h3>
-      <p class="mt-2 text-gray-700">모니터링·보안·백업·문서화·정기 점검</p>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">모니터링/보안/백업/문서화/정기점검</p>
     </div>
   </div>
 </BaseLayout>

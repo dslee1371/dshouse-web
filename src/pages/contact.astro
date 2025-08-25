@@ -1,24 +1,22 @@
-
-
-
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 <BaseLayout title="Contact | 이동수하우스">
-  <h1 class="text-2xl font-bold">문의하기</h1>
-  <form action="https://formspree.io/f/xqalvjwd" method="POST" class="mt-6 max-w-xl space-y-4"
-        onsubmit="if(!this.email.value.includes('@')){alert('이메일 형식이 올바르지 않습니다');return false;}">
-    <input name="name" placeholder="이름" required class="w-full border rounded-lg px-4 py-3" />
-    <input name="email" type="email" placeholder="이메일" required class="w-full border rounded-lg px-4 py-3" />
-    <textarea name="message" placeholder="문의 내용" rows="6" required class="w-full border rounded-lg px-4 py-3"></textarea>
+  <h1 class="text-3xl font-bold">문의하기</h1>
+  <form action="https://formspree.io/f/YOUR_FORMSPREE_ID" method="POST"
+        class="mt-6 max-w-xl space-y-4">
+    <input name="name" placeholder="이름" required
+           class="w-full border rounded-xl px-4 py-3 bg-white/70 dark:bg-white/5" />
+    <input name="email" type="email" placeholder="이메일" required
+           class="w-full border rounded-xl px-4 py-3 bg-white/70 dark:bg-white/5" />
+    <textarea name="message" rows="6" placeholder="문의 내용" required
+              class="w-full border rounded-xl px-4 py-3 bg-white/70 dark:bg-white/5"></textarea>
 
     <!-- Honeypot -->
     <div class="hidden" aria-hidden="true">
-      <label>Leave this field empty<input type="text" name="_hp" tabindex="-1" autocomplete="off" /></label>
+      <label>Leave empty<input type="text" name="_hp" tabindex="-1" autocomplete="off" /></label>
     </div>
 
-    <button type="submit" class="rounded-lg border px-6 py-3">보내기</button>
+    <button type="submit" class="btn btn-primary">보내기</button>
   </form>
-
-
 </BaseLayout>

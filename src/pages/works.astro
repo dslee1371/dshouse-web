@@ -1,18 +1,16 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
-import { getCollection } from "astro:content";
-const items = await getCollection('works');
-const sorted = items.sort((a,b) => +b.data.date - +a.data.date);
 ---
 <BaseLayout title="Works | 이동수하우스">
-  <h1 class="text-2xl font-bold">사례</h1>
+  <h1 class="text-3xl font-bold">사례</h1>
   <ul class="mt-4 grid md:grid-cols-2 gap-6">
-    {sorted.map(({ data, slug }) => (
-      <li class="border rounded-xl p-6">
-        <h3 class="font-semibold">{data.title}</h3>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">{data.summary}</p>
-        <a href={`/works/${slug}/`} class="mt-4 inline-block text-[--color-primary] dark:text-blue-300 underline">자세히</a>
-      </li>
-    ))}
+    <li class="card">
+      <h3 class="font-semibold">대기질 알림 앱(시제품)</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">지역별 지수 알림 및 위젯 제공</p>
+    </li>
+    <li class="card">
+      <h3 class="font-semibold">스마트 오피스텔 대시보드(PoC)</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">전력/온도/EV 충전 로그 모니터링</p>
+    </li>
   </ul>
 </BaseLayout>
