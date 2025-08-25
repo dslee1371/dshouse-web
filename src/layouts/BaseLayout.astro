@@ -1,35 +1,62 @@
 ---
-import "../styles/global.css";  // ✅ Astro는 이렇게 임포트하는 게 정석
-const { title = "이동수하우스", description = "생활·환경을 위한 공공데이터 기반 IT 솔루션" } = Astro.props;
+import Seo from "../components/Seo.astro";
+import "../styles/global.css";
+const { title = "이동수하우스", description = "생활·환경 IT 솔루션" } = Astro.props;
 ---
-<html lang="ko">
+<!doctype html>
+<html lang="ko" class="min-h-full" data-theme="light">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <Seo title={title} description={description} />
     <title>{title}</title>
     <link rel="icon" href="/favicon.ico" />
+    <script>
+      // 유지: 저장된 테마 적용(FOUC 방지)
+      try {
+        const t = localStorage.getItem('theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      } catch(e){}
+    </script>
+    <!-- Organization JSON-LD -->
+    <script type="application/ld+json">
+      {JSON.stringify({
+        "@context":"https://schema.org",
+        "@type":"Organization",
+        "name":"이동수하우스",
+        "url":"https://www.dshouse.co.kr",
+        "logo":"https://www.dshouse.co.kr/og-default.jpg",
+        "sameAs":[]
+      })}
+    </script>
   </head>
-  <body class="min-h-screen bg-white">
-    <header class="border-b">
+  <body class="min-h-screen bg-white text-gray-800 dark:bg-[#0a0a0a] dark:text-gray-100">
+    <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:m-4 focus:p-2 focus:bg-yellow-200">
+      본문으로 건너뛰기
+    </a>
+
+    <header class="border-b dark:border-white/10">
       <div class="mx-auto max-w-6xl px-4 py-4 flex items-center justify-between">
-        <a href="/" class="font-semibold">이동수하우스</a>
+        <a href="/" class="font-semibold text-[--color-primary] dark:text-blue-300">이동수하우스</a>
         <nav class="flex gap-6 text-sm">
           <a href="/about" class="hover:underline">About</a>
           <a href="/services" class="hover:underline">Services</a>
           <a href="/works" class="hover:underline">Works</a>
           <a href="/contact" class="hover:underline">Contact</a>
         </nav>
+        <!-- 필요 시 테마 토글 버튼 배치 -->
+        <!-- <ThemeToggle /> -->
       </div>
     </header>
-    <main class="mx-auto max-w-6xl px-4 py-10">
+
+    <main id="main" class="mx-auto max-w-6xl px-4 py-10">
       <slot />
     </main>
-    <footer class="mt-16 border-t">
-      <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-500">
+
+    <footer class="mt-16 border-t dark:border-white/10">
+      <div class="mx-auto max-w-6xl px-4 py-6 text-sm text-gray-500 dark:text-gray-400">
         © {new Date().getFullYear()} 이동수하우스 · 생활과 환경을 위한 IT 솔루션
       </div>
     </footer>
-    <link rel="stylesheet" href="/src/styles/global.css" />
   </body>
 </html>
