@@ -1,31 +1,37 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
-<BaseLayout title="이동수하우스 | 생활·환경 IT 솔루션">
+<BaseLayout title="이동수하우스 | 생활·환경 IT 솔루션" description="공공데이터·하이브리드 IT로 생활과 환경을 개선합니다.">
   <section class="text-center py-20">
-    <h1 class="text-3xl md:text-5xl font-bold leading-tight">
-      생활과 환경을 위한 IT 코드 개발
+    <h1 class="text-3xl md:text-5xl font-bold leading-tight tracking-tight">
+      생활과 환경을 바꾸는 <span class="text-[--color-primary] dark:text-blue-300">공공데이터 기반 IT</span>
     </h1>
-    <p class="mt-4 text-lg text-gray-600">
-      공공데이터를 활용하고, 온라인과 오프라인을 연결하는 하이브리드 솔루션
+    <p class="mt-4 text-lg text-gray-600 dark:text-gray-300">
+      온라인과 오프라인을 연결하는 실용적 솔루션으로, 일상 속 문제를 빠르게 해결합니다.
     </p>
-    <a href="/contact" class="mt-8 inline-block rounded-lg border px-6 py-3">
-      문의하기
-    </a>
+    <div class="mt-8 flex items-center justify-center gap-3">
+      <a href="/contact" class="rounded-lg border px-6 py-3">
+        문의하기
+      </a>
+      <a href="/services" class="rounded-lg border px-6 py-3">
+        서비스 보기
+      </a>
+    </div>
   </section>
 
-  <section class="grid md:grid-cols-3 gap-6 mt-10">
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">코드 개발</h3>
-      <p class="mt-2 text-sm text-gray-600">스마트홈·예약·에너지 모니터링 등 생활/환경 맞춤 코드</p>
+  <section aria-labelledby="features" class="grid md:grid-cols-3 gap-6 mt-10">
+    <h2 id="features" class="sr-only">주요 특징</h2>
+    <div class="card p-6 border rounded-[--radius-card]">
+      <h3 class="font-semibold">공공데이터 활용</h3>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">대기질·교통·날씨·부동산 등 데이터를 실제 서비스로.</p>
     </div>
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">공공데이터</h3>
-      <p class="mt-2 text-sm text-gray-600">대기질·교통·날씨·부동산 등 데이터 활용 서비스</p>
+    <div class="card p-6 border rounded-[--radius-card]">
+      <h3 class="font-semibold">생활·환경 맞춤 코드</h3>
+      <p class="mt-2 text-sm dark:text-gray-300">스마트홈/에너지/시설 예약 등 일상을 개선하는 코드.</p>
     </div>
-    <div class="p-6 border rounded-xl">
-      <h3 class="font-semibold">IT + 오프라인</h3>
-      <p class="mt-2 text-sm text-gray-600">시설·단체·상가 맞춤 관리 시스템(PoC부터 운영까지)</p>
+    <div class="card p-6 border rounded-[--radius-card]">
+      <h3 class="font-semibold">IT+오프라인 융합</h3>
+      <p class="mt-2 text-sm dark:text-gray-300">교회·주민센터·상가 등 현장 운영에 맞춘 하이브리드 솔루션.</p>
     </div>
   </section>
 </BaseLayout>
