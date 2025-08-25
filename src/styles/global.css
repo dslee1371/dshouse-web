@@ -1,14 +1,11 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-:root { color-scheme: light; }
-body { @apply text-gray-800; }
-
 @import "tailwindcss";
 
-/* 선택: 테마 변수 예시 (v4 방식) */
 @theme {
   --color-primary: #0a2a6b;
-  --font-sans: "Pretendard", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  --radius-card: 1rem;
 }
+
+:focus-visible { outline: 3px solid #eab308; outline-offset: 2px; }
+
+/* 다크 테마에서 대비 유지 */
+.dark .card { background: #111; border-color: rgba(255,255,255,0.1); }
