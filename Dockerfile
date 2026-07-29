@@ -1,4 +1,4 @@
-# --- Stage 1: Build the Astro site ---
+# --- Stage 1: Build the Astro site (SSR) ---
 FROM node:20-alpine AS build
 
 WORKDIR /app
@@ -13,15 +13,18 @@ RUN if [ -f package-lock.json ]; then npm ci; \
 COPY . .
 RUN npm run build
 
-# --- Stage 2: Serve with NGINX ---
-FROM nginx:1.27-alpine AS run
+# --- Stage 2: Run with Node (SSR pages + editor API) ---
+FROM node:20-alpine AS run
+WORKDIR /app
 RUN apk add --no-cache curl
-RUN rm /etc/nginx/conf.d/default.conf
-COPY nginx.conf /etc/nginx/conf.d/site.conf
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/package.json ./package.json
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
 
-EXPOSE 80
+ENV HOST=0.0.0.0
+ENV PORT=8080
+EXPOSE 8080
 HEALTHCHECK --interval=30s --timeout=3s --retries=3 \
-  CMD curl -fsS http://127.0.0.1/health || exit 1
+  CMD curl -fsS http://127.0.0.1:${PORT}/api/health || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "./dist/server/entry.mjs"]
