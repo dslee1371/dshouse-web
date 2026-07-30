@@ -105,6 +105,34 @@ docker run --rm -p 8080:8080 dshouse-web:latest
 # http://localhost:8080
 ```
 
+### 예원교회 `/storage` 버킷 설정
+
+`/storage`는 브라우저가 버킷에 직접 붙지 않고, Astro 서버 API가 버킷에 접근합니다.
+
+기존 PAR URL 방식:
+
+```env
+EDITOR_TOKEN=공유_편집_토큰
+STORAGE_MODE=par
+OCI_PAR_URL=https://objectstorage.../o/
+```
+
+private bucket 권장 방식, OCI Object Storage S3 호환 API:
+
+```env
+EDITOR_TOKEN=공유_편집_토큰
+STORAGE_MODE=oci-s3
+OCI_REGION=ap-tokyo-1
+OCI_NAMESPACE=테넌시_namespace
+OCI_BUCKET=버킷명
+OCI_S3_ACCESS_KEY_ID=customer_secret_key_access_key
+OCI_S3_SECRET_ACCESS_KEY=customer_secret_key_secret
+# 필요할 때만 직접 지정
+# OCI_S3_ENDPOINT=https://테넌시_namespace.compat.objectstorage.ap-tokyo-1.oraclecloud.com
+```
+
+`STORAGE_MODE=oci-s3`에서는 `OCI_PAR_URL`을 쓰지 않습니다. 버킷은 private으로 두고, 서버 컨테이너만 S3 호환 credential로 접근합니다.
+
 **중요:** Cloud Run은 컨테이너에 `PORT` 환경변수를 주입합니다.  
 `default.conf.template`에서 **`${PORT}`**로 리슨하도록 구성되어 있습니다.
 

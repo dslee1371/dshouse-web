@@ -1,8 +1,13 @@
 export const prerender = false;
 
-const PAR_URL = process.env.OCI_PAR_URL;
+import {
+  createBucketStorage,
+  MANIFEST_NAME,
+  readManifest,
+  writeManifest,
+} from "../../lib/bucket-storage";
+
 const TOKEN = process.env.EDITOR_TOKEN;
-const MANIFEST_NAME = "_manifest.json";
 const MAX_BYTES = 2_000_000;
 
 function isAuthorized(request: Request) {
@@ -10,39 +15,30 @@ function isAuthorized(request: Request) {
   return request.headers.get("x-editor-token") === TOKEN;
 }
 
-function objectUrl(name: string) {
-  return `${PAR_URL}${encodeURIComponent(name)}`;
-}
-
 export async function GET({ request, url }: { request: Request; url: URL }) {
   if (!isAuthorized(request)) {
     return new Response("Unauthorized", { status: 401 });
-  }
-  if (!PAR_URL) {
-    return new Response("Storage not configured", { status: 500 });
   }
   const name = url.searchParams.get("name");
   if (!name) {
     return new Response("Missing name", { status: 400 });
   }
 
-  const res = await fetch(objectUrl(name));
-  if (res.status === 404) {
-    return new Response("Not found", { status: 404 });
-  }
-  if (!res.ok) {
+  try {
+    const text = await createBucketStorage().getText(name);
+    if (text === null) {
+      return new Response("Not found", { status: 404 });
+    }
+    return new Response(text, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
+  } catch (error) {
+    console.error("bucket-file GET failed", error);
     return new Response("Failed to load file", { status: 502 });
   }
-  const text = await res.text();
-  return new Response(text, { headers: { "Content-Type": "text/plain; charset=utf-8" } });
 }
 
 export async function POST({ request }: { request: Request }) {
   if (!isAuthorized(request)) {
     return new Response("Unauthorized", { status: 401 });
-  }
-  if (!PAR_URL) {
-    return new Response("Storage not configured", { status: 500 });
   }
 
   const body = await request.json().catch(() => null);
@@ -58,25 +54,24 @@ export async function POST({ request }: { request: Request }) {
     return new Response("Payload too large", { status: 413 });
   }
 
-  const putRes = await fetch(objectUrl(name), { method: "PUT", body: content });
-  if (!putRes.ok) {
+  const storage = createBucketStorage();
+  try {
+    await storage.putText(name, content);
+  } catch (error) {
+    console.error("bucket-file POST save failed", error);
     return new Response("Failed to save file", { status: 502 });
   }
 
-  const manifestRes = await fetch(objectUrl(MANIFEST_NAME));
-  const manifest = manifestRes.ok ? await manifestRes.json().catch(() => []) : [];
-  const entries = Array.isArray(manifest) ? manifest : [];
+  const entries = await readManifest(storage).catch(() => []);
   const next = [
     { name, savedAt: new Date().toISOString() },
     ...entries.filter((entry: any) => entry?.name !== name),
   ];
 
-  const manifestPutRes = await fetch(objectUrl(MANIFEST_NAME), {
-    method: "PUT",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(next),
-  });
-  if (!manifestPutRes.ok) {
+  try {
+    await writeManifest(next, storage);
+  } catch (error) {
+    console.error("bucket-file POST manifest update failed", error);
     return new Response("Saved file, but failed to update file list", { status: 502 });
   }
 

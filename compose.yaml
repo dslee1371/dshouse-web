@@ -7,5 +7,12 @@ services:
       - "8080:8080"
     environment:
       - EDITOR_TOKEN=${EDITOR_TOKEN}
+      - STORAGE_MODE=${STORAGE_MODE:-par}
       - OCI_PAR_URL=${OCI_PAR_URL}
+      - OCI_REGION=${OCI_REGION}
+      - OCI_NAMESPACE=${OCI_NAMESPACE}
+      - OCI_BUCKET=${OCI_BUCKET}
+      - OCI_S3_ENDPOINT=${OCI_S3_ENDPOINT}
+      - OCI_S3_ACCESS_KEY_ID=${OCI_S3_ACCESS_KEY_ID}
+      - OCI_S3_SECRET_ACCESS_KEY=${OCI_S3_SECRET_ACCESS_KEY}
     restart: unless-stopped

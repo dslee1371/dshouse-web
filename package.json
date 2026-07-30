@@ -9,8 +9,9 @@
     "astro": "astro"
   },
   "dependencies": {
-    "astro": "^5.13.2",
-    "@astrojs/node": "^9.4.4"
+    "@astrojs/node": "^9.4.4",
+    "@aws-sdk/client-s3": "^3.1098.0",
+    "astro": "^5.13.2"
   },
   "devDependencies": {
     "@astrojs/sitemap": "^3.5.1",
