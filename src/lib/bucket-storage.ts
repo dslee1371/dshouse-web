@@ -4,6 +4,7 @@ import {
   PutObjectCommand,
   S3Client,
 } from "@aws-sdk/client-s3";
+import { NodeHttpHandler } from "@smithy/node-http-handler";
 
 export const MANIFEST_NAME = "_manifest.json";
 
@@ -23,6 +24,10 @@ function env(name: string) {
 
 function objectUrl(parUrl: string, name: string) {
   return `${parUrl}${encodeURIComponent(name)}`;
+}
+
+function normalizeEndpoint(endpoint: string) {
+  return /^https?:\/\//i.test(endpoint) ? endpoint : `https://${endpoint}`;
 }
 
 function createParStorage(): StorageDriver {
@@ -68,8 +73,12 @@ function createOciS3Storage(): StorageDriver {
 
   const client = new S3Client({
     region,
-    endpoint,
+    endpoint: normalizeEndpoint(endpoint),
     forcePathStyle: true,
+    requestHandler: new NodeHttpHandler({
+      connectionTimeout: 5_000,
+      requestTimeout: 10_000,
+    }),
     credentials: {
       accessKeyId,
       secretAccessKey,
