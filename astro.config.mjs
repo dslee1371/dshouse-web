@@ -5,7 +5,7 @@ import sitemap from '@astrojs/sitemap';
 import node from '@astrojs/node';
 
 export default defineConfig({
-  site: 'https://www.dshouse.co.kr',
+  site: 'https://www.dsdshouse.com',
   output: 'server',
   adapter: node({ mode: 'standalone' }),
   integrations: [sitemap()],
