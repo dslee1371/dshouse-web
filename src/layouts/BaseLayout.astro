@@ -5,10 +5,15 @@ import ThemeToggle from "../components/ThemeToggle.astro";
 
 const { title = "이동수하우스", description = "생활·환경 IT 솔루션" } = Astro.props;
 
+// 메뉴는 전부 동일한 위계로 둡니다.
+// 예전에는 "AI 서비스"에만 gradient-text를 걸어 강조했지만,
+// 라이트 모드 대비가 1.4~2.5:1로 기준(4.5:1) 미달이었고
+// 상시 강조가 현재 위치 표시(aria-current)와 충돌했습니다.
+// 신제품 홍보는 홈 배너와 /ai-service 페이지가 맡습니다.
 const navItems = [
   { href: "/about", label: "About" },
   { href: "/services", label: "Services" },
-  { href: "/ai-service", label: "AI 서비스", accent: true },
+  { href: "/ai-service", label: "AI 서비스" },
   { href: "/works", label: "Works" },
   { href: "/automation", label: "자동화" },
   { href: "/contact", label: "Contact" },
@@ -73,10 +78,7 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
               <a
                 href={item.href}
                 aria-current={isCurrent(item.href) ? "page" : undefined}
-                class:list={[
-                  "nav-link rounded-lg px-3 py-2",
-                  item.accent && "gradient-text font-semibold",
-                ]}
+                class="nav-link rounded-lg px-3 py-2"
               >
                 {item.label}
               </a>
@@ -118,12 +120,9 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
                 <a
                   href={item.href}
                   aria-current={isCurrent(item.href) ? "page" : undefined}
-                  class:list={[
-                    "mobile-nav-link flex items-center justify-between rounded-lg px-3 py-3 text-sm",
-                    item.accent && "font-semibold",
-                  ]}
+                  class="mobile-nav-link flex items-center justify-between rounded-lg px-3 py-3 text-sm"
                 >
-                  <span class={item.accent ? "gradient-text" : ""}>{item.label}</span>
+                  <span>{item.label}</span>
                   <svg
                     width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                     stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
