@@ -1,7 +1,22 @@
 ---
 import "../styles/global.css";
 import Seo from "../components/Seo.astro";
+import ThemeToggle from "../components/ThemeToggle.astro";
+
 const { title = "이동수하우스", description = "생활·환경 IT 솔루션" } = Astro.props;
+
+const navItems = [
+  { href: "/about", label: "About" },
+  { href: "/services", label: "Services" },
+  { href: "/ai-service", label: "AI 서비스", accent: true },
+  { href: "/works", label: "Works" },
+  { href: "/automation", label: "자동화" },
+  { href: "/contact", label: "Contact" },
+];
+
+// 하위 경로까지 현재 메뉴로 인식 (예: /automation/church-bulletin → 자동화)
+const path = Astro.url.pathname.replace(/\/$/, "") || "/";
+const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
 <!doctype html>
 <html lang="ko" class="min-h-full">
@@ -12,19 +27,35 @@ const { title = "이동수하우스", description = "생활·환경 IT 솔루션
     <!-- description·canonical·OG·Twitter 태그는 Seo에서 일괄 출력 -->
     <Seo title={title} description={description} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <script>
+    <script is:inline>
       // 다크모드 유지(FOUC 방지)
       try { if (localStorage.getItem('theme') === 'dark') document.documentElement.classList.add('dark'); } catch(e){}
+      // 스크롤 진입 애니메이션은 JS가 동작할 때만 켭니다.
+      // 이 클래스가 없으면 [data-reveal] 요소는 처음부터 그냥 보입니다.
+      document.documentElement.classList.add('js');
     </script>
   </head>
   <body>
+    <!-- 키보드 사용자용 본문 바로가기 -->
+    <a
+      href="#main"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[60]
+             focus:rounded-lg focus:bg-white focus:px-4 focus:py-2 focus:text-sm focus:font-medium
+             focus:shadow-lg dark:focus:bg-[#12141a]"
+    >
+      본문으로 바로가기
+    </a>
+
     <!-- Sticky / Glass Header -->
-    <header class="sticky top-0 z-50 border-b border-black/5 dark:border-white/10
-                   backdrop-blur bg-white/70 dark:bg-black/30">
-      <div class="mx-auto max-w-6xl px-4 py-3 flex items-center justify-between">
-        <a href="/" class="flex items-center gap-2 font-semibold">
+    <header
+      id="site-header"
+      class="site-header sticky top-0 z-50 border-b border-black/5 dark:border-white/10
+             backdrop-blur bg-white/70 dark:bg-black/30"
+    >
+      <div class="mx-auto max-w-6xl px-4 flex items-center justify-between">
+        <a href="/" class="header-brand flex items-center gap-2 font-semibold" aria-label="이동수하우스 홈">
           <!-- 심플 로고 아이콘 (인라인 SVG) -->
-          <svg width="22" height="22" viewBox="0 0 24 24" class="text-[--color-primary]">
+          <svg width="22" height="22" viewBox="0 0 24 24" class="brand-mark text-[--color-primary]" aria-hidden="true">
             <g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
               <path d="M4 11L12 4l8 7v8H4z" />
               <path d="M9 14c-1.2-.9-1.2-2.6 0-3.5c1.4-.8 2.7.1 2.5 1.7c-.2 1.5-1.5 2.2-2.5 1.8Z" />
@@ -34,28 +65,82 @@ const { title = "이동수하우스", description = "생활·환경 IT 솔루션
           </svg>
           이동수하우스
         </a>
-        <nav class="flex items-center gap-6 text-sm">
-          <a href="/about" class="hover:underline">About</a>
-          <a href="/services" class="hover:underline">Services</a>
-          <a href="/ai-service" class="hover:underline gradient-text font-semibold">AI 서비스</a>
-          <a href="/works" class="hover:underline">Works</a>
-          <a href="/automation" class="hover:underline">자동화</a>
-          <a href="/contact" class="hover:underline">Contact</a>
-          <button
-            class="rounded-lg px-2 py-1 text-xs border border-white/30 dark:border-white/20"
-            aria-label="Toggle dark mode"
-            onclick="
-              const html = document.documentElement;
-              const next = html.classList.toggle('dark');
-              try { localStorage.setItem('theme', next ? 'dark' : 'light'); } catch(e){}
-            "
-          >🌓</button>
+
+        <!-- 데스크톱 내비게이션 -->
+        <nav class="hidden md:flex items-center gap-1 text-sm" aria-label="주요 메뉴">
+          {
+            navItems.map((item) => (
+              <a
+                href={item.href}
+                aria-current={isCurrent(item.href) ? "page" : undefined}
+                class:list={[
+                  "nav-link rounded-lg px-3 py-2",
+                  item.accent && "gradient-text font-semibold",
+                ]}
+              >
+                {item.label}
+              </a>
+            ))
+          }
+          <ThemeToggle class="ml-2" />
         </nav>
+
+        <!-- 모바일: 토글 + 햄버거 -->
+        <div class="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            id="nav-toggle"
+            class="grid h-11 w-11 place-items-center rounded-xl border border-black/10 dark:border-white/20
+                   transition-colors hover:bg-black/5 dark:hover:bg-white/10"
+            aria-label="메뉴 열기"
+            aria-expanded="false"
+            aria-controls="mobile-nav"
+          >
+            <span class="burger" aria-hidden="true">
+              <span></span><span></span><span></span>
+            </span>
+          </button>
+        </div>
       </div>
+
+      <!-- 모바일 드로어 -->
+      <nav
+        id="mobile-nav"
+        class="mobile-nav md:hidden border-t border-black/5 dark:border-white/10"
+        aria-label="주요 메뉴"
+        data-open="false"
+      >
+        <ul class="mx-auto max-w-6xl px-4 py-2">
+          {
+            navItems.map((item) => (
+              <li>
+                <a
+                  href={item.href}
+                  aria-current={isCurrent(item.href) ? "page" : undefined}
+                  class:list={[
+                    "mobile-nav-link flex items-center justify-between rounded-lg px-3 py-3 text-sm",
+                    item.accent && "font-semibold",
+                  ]}
+                >
+                  <span class={item.accent ? "gradient-text" : ""}>{item.label}</span>
+                  <svg
+                    width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                    class="opacity-40" aria-hidden="true"
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
     </header>
 
     <!-- Decorative background layer -->
-    <div class="absolute inset-0 -z-10 overflow-hidden">
+    <div class="absolute inset-0 -z-10 overflow-hidden" aria-hidden="true">
       <div class="bg-grid w-full h-[60vh]"></div>
       <div class="absolute -top-16 -left-16 w-[400px] h-[400px] rounded-full blob
                   bg-[radial-gradient(circle_at_center,_rgba(71,163,255,0.35),_transparent_60%)]"></div>
@@ -68,9 +153,107 @@ const { title = "이동수하우스", description = "생활·환경 IT 솔루션
     </main>
 
     <footer class="mt-16 border-t border-black/5 dark:border-white/10">
-      <div class="mx-auto max-w-6xl px-4 py-8 text-sm text-gray-500 dark:text-gray-400">
-        © {new Date().getFullYear()} 이동수하우스 · 생활과 환경을 위한 IT 솔루션
+      <div class="mx-auto max-w-6xl px-4 py-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          © {new Date().getFullYear()} 이동수하우스 · 생활과 환경을 위한 IT 솔루션
+        </p>
+        <nav class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gray-400" aria-label="푸터 메뉴">
+          <a href="/services" class="hover:underline">Services</a>
+          <a href="/automation" class="hover:underline">자동화</a>
+          <a href="/works" class="hover:underline">Works</a>
+          <a href="/contact" class="hover:underline">문의하기</a>
+        </nav>
       </div>
     </footer>
+
+    <script is:inline>
+      // 1) 헤더 스크롤 반응 — 상단을 벗어나면 경계를 또렷하게
+      const header = document.getElementById("site-header");
+      const onScroll = () => {
+        header.toggleAttribute("data-scrolled", window.scrollY > 8);
+      };
+      onScroll();
+      addEventListener("scroll", onScroll, { passive: true });
+
+      // 2) 모바일 드로어
+      const navToggle = document.getElementById("nav-toggle");
+      const mobileNav = document.getElementById("mobile-nav");
+
+      function setNav(open) {
+        mobileNav.dataset.open = String(open);
+        navToggle.setAttribute("aria-expanded", String(open));
+        navToggle.setAttribute("aria-label", open ? "메뉴 닫기" : "메뉴 열기");
+      }
+
+      navToggle.addEventListener("click", () => {
+        setNav(mobileNav.dataset.open !== "true");
+      });
+
+      // 데스크톱으로 넓어지면 드로어 상태를 초기화
+      matchMedia("(min-width: 768px)").addEventListener("change", (e) => {
+        if (e.matches) setNav(false);
+      });
+
+      addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && mobileNav.dataset.open === "true") {
+          setNav(false);
+          navToggle.focus();
+        }
+      });
+
+      // 3) 스크롤 진입 애니메이션 — [data-reveal] 요소를 화면에 들어올 때 표시
+      const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const targets = document.querySelectorAll("[data-reveal]");
+
+      if (reduceMotion || !("IntersectionObserver" in window)) {
+        targets.forEach((node) => node.setAttribute("data-revealed", ""));
+      } else {
+        const observer = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              entry.target.setAttribute("data-revealed", "");
+              observer.unobserve(entry.target);
+            });
+          },
+          { rootMargin: "0px 0px -10% 0px", threshold: 0.05 },
+        );
+        targets.forEach((node) => observer.observe(node));
+      }
+
+      // 4) 숫자 카운트업 — [data-countup="숫자"]
+      document.querySelectorAll("[data-countup]").forEach((node) => {
+        const end = Number(node.dataset.countup);
+        if (!Number.isFinite(end)) return;
+        if (reduceMotion) {
+          node.textContent = String(end);
+          return;
+        }
+        const suffix = node.dataset.countupSuffix ?? "";
+        let started = false;
+        const run = () => {
+          if (started) return;
+          started = true;
+          const duration = 900;
+          const t0 = performance.now();
+          const tick = (now) => {
+            const p = Math.min((now - t0) / duration, 1);
+            const eased = 1 - Math.pow(1 - p, 3);
+            node.textContent = Math.round(end * eased) + suffix;
+            if (p < 1) requestAnimationFrame(tick);
+          };
+          requestAnimationFrame(tick);
+        };
+        if ("IntersectionObserver" in window) {
+          const io = new IntersectionObserver(
+            (entries) => entries.forEach((e) => e.isIntersecting && (run(), io.disconnect())),
+            { threshold: 0.5 },
+          );
+          io.observe(node);
+        } else {
+          run();
+        }
+      });
+    </script>
   </body>
 </html>

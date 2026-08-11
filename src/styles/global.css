@@ -38,13 +38,142 @@ a { @apply outline-none; }
   backdrop-filter: blur(8px);
 }
 
-/* ---- Cards / Glass ---- */
+/* ---- Cards / Glass ----
+   호버 반응은 위계를 나눕니다.
+   .card          : 정적 카드 — 테두리만 또렷해짐(클릭 가능하다는 신호를 주지 않음)
+   .card-linked   : 링크/버튼을 감싼 카드 — 들어올림 + 테두리 강조
+*/
 .card {
-  @apply border rounded-[--radius-card] p-6 transition-transform;
+  @apply border rounded-[--radius-card] p-6;
   border-color: rgba(0,0,0,0.08);
+  transition: border-color 200ms ease, background-color 200ms ease, transform 200ms ease,
+              box-shadow 200ms ease;
 }
 .dark .card { border-color: rgba(255,255,255,0.1); background: rgba(16,18,24,0.6); }
-.card:hover { transform: translateY(-2px); }
+.card:hover { border-color: rgba(71,163,255,0.45); }
+.dark .card:hover { border-color: rgba(110,231,255,0.35); }
+
+.card-linked { cursor: pointer; }
+.card-linked:hover,
+.card-linked:focus-within {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(15, 32, 66, 0.1);
+  border-color: rgba(71,163,255,0.55);
+}
+.dark .card-linked:hover,
+.dark .card-linked:focus-within {
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+}
+
+/* ---- Header ---- */
+.site-header { transition: box-shadow 220ms ease, border-color 220ms ease; }
+.site-header > div:first-child { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+.site-header[data-scrolled] {
+  box-shadow: 0 6px 24px rgba(15, 32, 66, 0.07);
+  border-color: rgba(0, 0, 0, 0.1);
+}
+.dark .site-header[data-scrolled] {
+  box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.16);
+}
+.header-brand { transition: opacity 160ms ease; }
+.header-brand:hover { opacity: 0.75; }
+.brand-mark { transition: transform 300ms cubic-bezier(.34,1.56,.64,1); }
+.header-brand:hover .brand-mark { transform: translateY(-2px) rotate(-4deg); }
+
+/* 데스크톱 내비: 현재 위치는 밑줄로, 호버는 배경으로 구분 */
+.nav-link { position: relative; transition: background-color 160ms ease; }
+.nav-link:hover { background: rgba(0, 0, 0, 0.05); }
+.dark .nav-link:hover { background: rgba(255, 255, 255, 0.08); }
+.nav-link::after {
+  content: "";
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.25rem;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, var(--color-accent), var(--color-neon));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 220ms ease;
+}
+.nav-link:hover::after { transform: scaleX(0.5); }
+.nav-link[aria-current="page"]::after { transform: scaleX(1); }
+
+/* ---- 모바일 드로어 ---- */
+.mobile-nav {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows 260ms ease, opacity 200ms ease, visibility 260ms;
+  opacity: 0;
+  /* 닫힌 상태에서는 키보드 탭 이동 대상에서도 빠져야 합니다 */
+  visibility: hidden;
+}
+.mobile-nav > ul { min-height: 0; list-style: none; margin: 0; }
+.mobile-nav[data-open="true"] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+}
+.mobile-nav-link { transition: background-color 160ms ease; }
+.mobile-nav-link:hover { background: rgba(0, 0, 0, 0.05); }
+.dark .mobile-nav-link:hover { background: rgba(255, 255, 255, 0.08); }
+.mobile-nav-link[aria-current="page"] {
+  background: linear-gradient(90deg, rgba(71,163,255,0.14), rgba(110,231,255,0.08));
+  font-weight: 600;
+}
+
+/* 햄버거 → X 변형 */
+.burger { display: grid; gap: 4px; }
+.burger span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: currentColor;
+  transition: transform 220ms ease, opacity 160ms ease;
+}
+[aria-expanded="true"] .burger span:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+[aria-expanded="true"] .burger span:nth-child(2) { opacity: 0; }
+[aria-expanded="true"] .burger span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+
+/* ---- 테마 아이콘 전환 ---- */
+.theme-icon-dark { display: none; }
+.dark .theme-icon-light { display: none; }
+.dark .theme-icon-dark { display: block; }
+
+/* ---- 스크롤 진입 애니메이션 ----
+   [data-reveal]로 표시하고, 화면에 들어오면 스크립트가 [data-revealed]를 붙입니다.
+   data-reveal-delay로 순차 등장(stagger)을 만듭니다.
+*/
+/* .js 스코프가 핵심입니다 — 스크립트가 막히거나 실패하면 숨김 자체가 적용되지 않아
+   콘텐츠가 사라지지 않습니다. .js는 <head>에서 즉시 부여합니다. */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 520ms ease, transform 520ms cubic-bezier(.22,.61,.36,1);
+  transition-delay: var(--reveal-delay, 0ms);
+}
+.js [data-reveal][data-revealed] { opacity: 1; transform: none; }
+[data-reveal-delay="1"] { --reveal-delay: 70ms; }
+[data-reveal-delay="2"] { --reveal-delay: 140ms; }
+[data-reveal-delay="3"] { --reveal-delay: 210ms; }
+[data-reveal-delay="4"] { --reveal-delay: 280ms; }
+[data-reveal-delay="5"] { --reveal-delay: 350ms; }
+
+/* ---- 버튼 포커스/호버 다듬기 ---- */
+.btn { transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease; }
+.btn-primary:active { transform: translateY(0) scale(0.99); }
+.btn-ghost:hover { transform: translateY(-1px); }
+.btn:disabled,
+.btn[aria-disabled="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none !important;
+  box-shadow: none;
+}
 
 /* ---- 본문 타이포그래피 (마크다운 렌더용) ---- */
 .prose-ds { @apply text-[15px] leading-relaxed text-gray-700 dark:text-gray-300; }
@@ -87,3 +216,31 @@ a { @apply outline-none; }
 /* ---- Keyframes ---- */
 @keyframes floaty { 0%,100% { transform: translateY(0) } 50% { transform: translateY(-6px) } }
 .floaty { animation: floaty 6s ease-in-out infinite; }
+
+/* 히어로 진입 시 한 번만 떠오르는 등장 */
+@keyframes rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: none; }
+}
+.rise {
+  animation: rise 620ms cubic-bezier(.22,.61,.36,1) both;
+  animation-delay: var(--rise-delay, 0ms);
+}
+
+/* ---- 모션 감소 설정 존중 ----
+   시스템에서 "동작 줄이기"를 켠 사용자에게는 모든 장식 애니메이션을 끕니다.
+   상태 변화(색·테두리)는 남겨 조작 피드백은 유지합니다.
+*/
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .js [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .floaty, .rise { animation: none !important; }
+  .card-linked:hover, .card-linked:focus-within, .btn-ghost:hover, .btn-primary:hover {
+    transform: none !important;
+  }
+}

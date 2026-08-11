@@ -6,13 +6,13 @@ export const prerender = true;
 <BaseLayout title="AI 동네 리포트 | 이동수하우스" description="공공데이터를 AI가 읽고, 우리 동네의 환경·안전 위험을 미리 알려드립니다.">
   <!-- HERO -->
   <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
-    <div class="absolute -top-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
+    <div aria-hidden="true" class="absolute -top-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
                 bg-[radial-gradient(circle_at_center,_rgba(71,163,255,0.25),_transparent_60%)]"></div>
-    <div class="absolute -bottom-28 -right-10 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
+    <div aria-hidden="true" class="absolute -bottom-28 -right-10 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
                 bg-[radial-gradient(circle_at_center,_rgba(110,231,255,0.25),_transparent_60%)]"></div>
 
     <span class="inline-block rounded-full border px-3 py-1 text-xs">NEW · AI SaaS</span>
-    <h1 class="mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
+    <h1 class="rise mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
       우리 동네 공공데이터를<br class="hidden md:block" /><span class="gradient-text">AI가 읽고, 위험을 미리</span> 알려드립니다
     </h1>
     <p class="mt-4 max-w-2xl text-gray-600 dark:text-gray-300">
@@ -34,14 +34,14 @@ export const prerender = true;
   </section>
 
   <!-- 핵심 기능 -->
-  <section class="mt-12 grid gap-6 md:grid-cols-2">
+  <section data-reveal class="mt-12 grid gap-6 md:grid-cols-2">
     <div class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
+      <div class="card rounded-2xl bg-white/80 dark:bg-white/5" data-reveal data-reveal-delay="1">
         <div class="flex items-center gap-3">
           <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl
                         bg-[radial-gradient(circle,_rgba(71,163,255,0.2),_transparent_60%)]
                         text-[--color-primary]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <circle cx="12" cy="12" r="9" stroke-width="2"/>
               <path d="M12 7v5l3 3" stroke-width="2" stroke-linecap="round"/>
             </svg>
@@ -61,12 +61,12 @@ export const prerender = true;
     </div>
 
     <div class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
+      <div class="card rounded-2xl bg-white/80 dark:bg-white/5" data-reveal data-reveal-delay="2">
         <div class="flex items-center gap-3">
           <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl
                         bg-[radial-gradient(circle,_rgba(110,231,255,0.2),_transparent_60%)]
                         text-[--color-primary]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M4 19V9a2 2 0 0 1 2-2h3l2-2h2l2 2h3a2 2 0 0 1 2 2v10" stroke-width="2" stroke-linejoin="round"/>
               <path d="M4 19h16M8 19v-4h8v4" stroke-width="2"/>
             </svg>
@@ -85,12 +85,12 @@ export const prerender = true;
     </div>
 
     <div class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
+      <div class="card rounded-2xl bg-white/80 dark:bg-white/5" data-reveal data-reveal-delay="3">
         <div class="flex items-center gap-3">
           <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl
                         bg-[radial-gradient(circle,_rgba(71,163,255,0.2),_transparent_60%)]
                         text-[--color-primary]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M4 21V10l6-4 6 4v11" stroke-width="2" stroke-linejoin="round"/>
               <path d="M14 21V13l6-3v11" stroke-width="2" stroke-linejoin="round"/>
             </svg>
@@ -109,12 +109,12 @@ export const prerender = true;
     </div>
 
     <div class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
+      <div class="card rounded-2xl bg-white/80 dark:bg-white/5" data-reveal data-reveal-delay="4">
         <div class="flex items-center gap-3">
           <span class="inline-flex h-11 w-11 items-center justify-center rounded-xl
                         bg-[radial-gradient(circle,_rgba(110,231,255,0.2),_transparent_60%)]
                         text-[--color-primary]">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+            <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor">
               <path d="M12 3l7 3v6a7 7 0 0 1-7 7a7 7 0 0 1-7-7V6l7-3z" stroke-width="2"/>
               <path d="M9 12l2 2 4-4" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
@@ -134,7 +134,7 @@ export const prerender = true;
   </section>
 
   <!-- 작동 방식 -->
-  <section id="how" class="mt-14 scroll-mt-24">
+  <section data-reveal id="how" class="mt-14 scroll-mt-24">
     <h2 class="text-xl font-semibold">작동 방식</h2>
     <ol class="mt-6 grid gap-6 md:grid-cols-4 text-sm">
       <li class="card text-center">
@@ -157,10 +157,10 @@ export const prerender = true;
   </section>
 
   <!-- 요금제 -->
-  <section class="mt-14">
+  <section data-reveal class="mt-14">
     <h2 class="text-xl font-semibold">요금제</h2>
     <div class="mt-6 grid gap-6 md:grid-cols-3">
-      <div class="card rounded-2xl">
+      <div class="card rounded-2xl" data-reveal data-reveal-delay="1">
         <div class="text-sm text-gray-500">개인 · Free</div>
         <div class="mt-2 text-2xl font-bold">₩0</div>
         <ul class="mt-3 text-sm space-y-2">
@@ -171,7 +171,7 @@ export const prerender = true;
         <a href="/contact" class="mt-4 inline-block btn btn-primary">무료 시작</a>
       </div>
 
-      <div class="card rounded-2xl border-2 border-[--color-primary]">
+      <div class="card rounded-2xl border-2 border-[--color-primary]" data-reveal data-reveal-delay="2">
         <div class="text-sm text-gray-500">개인 · Premium</div>
         <div class="mt-2 text-2xl font-bold">₩9,900 / 월</div>
         <ul class="mt-3 text-sm space-y-2">
@@ -182,7 +182,7 @@ export const prerender = true;
         <a href="/contact" class="mt-4 inline-block btn btn-primary">문의하기</a>
       </div>
 
-      <div class="card rounded-2xl">
+      <div class="card rounded-2xl" data-reveal data-reveal-delay="3">
         <div class="text-sm text-gray-500">B2B · 지자체/관리소</div>
         <div class="mt-2 text-2xl font-bold">맞춤 견적</div>
         <ul class="mt-3 text-sm space-y-2">
@@ -197,7 +197,7 @@ export const prerender = true;
   </section>
 
   <!-- CTA -->
-  <section class="mt-16 text-center rounded-2xl p-10 border border-black/5 dark:border-white/10
+  <section data-reveal class="mt-16 text-center rounded-2xl p-10 border border-black/5 dark:border-white/10
                    bg-[linear-gradient(135deg,rgba(71,163,255,0.12),rgba(110,231,255,0.12))]">
     <h2 class="text-2xl font-bold">우리 동네, AI에게 먼저 물어보세요.</h2>
     <p class="mt-2 text-gray-600 dark:text-gray-300">베타 테스트에 참여하고 가장 먼저 리포트를 받아보세요.</p>
