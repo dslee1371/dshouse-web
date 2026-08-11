@@ -105,9 +105,27 @@ docker run --rm -p 8080:8080 dshouse-web:latest
 # http://localhost:8080
 ```
 
-### 예원교회 `/storage` 버킷 설정
+### 자동화 프로젝트 (`/automation`)
 
-`/storage`는 브라우저가 버킷에 직접 붙지 않고, Astro 서버 API가 버킷에 접근합니다.
+반복 업무 자동화 프로젝트를 담는 카테고리입니다. 공개 케이스 스터디와 비공개 도구를 분리했습니다.
+
+| 경로 | 성격 | 설명 |
+|---|---|---|
+| `/automation` | 공개 | 프로젝트 목록. `src/content/automation/*.md` 추가 시 자동 반영 |
+| `/automation/church-bulletin` | 공개 | 주보 자동 생성 케이스 스터디 (마크다운 본문 + 파이프라인) |
+| `/automation/church-bulletin/editor` | 토큰 | 예배자료 입력·저장 도구 (구 `/storage`) |
+| `/automation/church-bulletin/print` | 토큰 | 주보 A4 인쇄뷰 → 브라우저에서 PDF 저장 |
+| `/storage` | — | 위 editor로 301 리다이렉트 (구 북마크 호환) |
+
+프로젝트를 추가할 때는 `src/content/automation/`에 마크다운 파일만 만들면 됩니다. 스키마는 `src/content/config.ts`의 `automation` 컬렉션을 참고하세요 (`status`, `before`/`after`, `stack`, `pipeline`, `tool`).
+
+자료 텍스트의 생성·파싱·검증과 주보 모델 변환은 `src/lib/material.ts` 한 곳에 모여 있습니다. 에디터와 인쇄뷰가 이 모듈을 공유하므로, 예배순서를 바꿀 때는 `buildMaterial`과 `toBulletin`을 함께 수정해야 합니다.
+
+주보 PDF는 별도 렌더링 엔진 없이 인쇄용 CSS(`@page size: A4`)로 처리합니다. 브라우저 인쇄 대화상자에서 "PDF로 저장"을 선택하는 방식이라 서버에 Chromium 의존성이 없습니다. 예배 PPT는 악보 파일이 로컬에 있어 `sunday-worship-ppt` 스킬로 로컬에서 생성합니다.
+
+### 버킷 설정
+
+에디터는 브라우저가 버킷에 직접 붙지 않고, Astro 서버 API(`/api/bucket-*`)가 버킷에 접근합니다.
 
 기존 PAR URL 방식:
 

@@ -1,0 +1,141 @@
+---
+import { getCollection, type CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const projects = await getCollection("automation");
+  return projects.map((project) => ({
+    params: { slug: project.slug },
+    props: { project },
+  }));
+}
+
+type Props = { project: CollectionEntry<"automation"> };
+const { project } = Astro.props as Props;
+const { Content } = await project.render();
+const data = project.data;
+
+const whereLabel: Record<string, string> = {
+  web: "웹",
+  cloud: "클라우드",
+  local: "로컬",
+};
+
+const whereStyle: Record<string, string> = {
+  web: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  cloud: "border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300",
+  local: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+};
+---
+
+<BaseLayout title={`${data.title} | 이동수하우스`} description={data.summary}>
+  <!-- HERO -->
+  <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
+    <div class="absolute -top-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
+                bg-[radial-gradient(circle_at_center,_rgba(71,163,255,0.25),_transparent_60%)]"></div>
+
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
+      <a href="/automation" class="hover:underline">자동화 프로젝트</a>
+      <span aria-hidden="true" class="mx-2">/</span>
+      <span>{data.org ?? data.title}</span>
+    </nav>
+
+    <h1 class="mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
+      <span class="gradient-text">{data.title}</span>
+    </h1>
+    <p class="mt-4 max-w-2xl text-gray-600 dark:text-gray-300">{data.summary}</p>
+
+    <div class="mt-6 flex flex-wrap items-center gap-3 text-sm">
+      <span class="rounded-full border px-3 py-1">{data.status}</span>
+      {
+        (data.before || data.after) && (
+          <span class="rounded-full border px-3 py-1">
+            <span class="text-gray-500 line-through">{data.before}</span>
+            <span aria-hidden="true" class="mx-2 text-gray-400">→</span>
+            <span class="font-semibold">{data.after}</span>
+          </span>
+        )
+      }
+      {
+        data.tool && (
+          <a href={data.tool.href} class="btn btn-primary text-xs px-4 py-2">
+            {data.tool.label}
+            {data.tool.gated && <span class="ml-1">🔒</span>}
+          </a>
+        )
+      }
+    </div>
+  </section>
+
+  <div class="mt-12 grid gap-10 lg:grid-cols-[minmax(0,1fr)_280px]">
+    <!-- 본문 -->
+    <article class="prose-ds">
+      <Content />
+    </article>
+
+    <!-- 사이드: 파이프라인 + 스택 -->
+    <aside class="space-y-6 lg:sticky lg:top-24 lg:self-start">
+      {
+        data.pipeline.length > 0 && (
+          <div class="card rounded-2xl">
+            <h2 class="text-sm font-semibold">파이프라인</h2>
+            <ol class="mt-4 space-y-1">
+              {data.pipeline.map((step, index) => (
+                <li>
+                  <div class="flex items-start gap-3">
+                    <span class="mt-0.5 shrink-0 w-6 h-6 rounded-full border border-black/10 dark:border-white/15 grid place-items-center text-xs font-semibold">
+                      {index + 1}
+                    </span>
+                    <div>
+                      <div class="flex flex-wrap items-center gap-2">
+                        <span class="text-sm font-medium">{step.label}</span>
+                        <span class={`rounded-md border px-1.5 py-0.5 text-[10px] ${whereStyle[step.where]}`}>
+                          {whereLabel[step.where]}
+                        </span>
+                      </div>
+                      {step.detail && (
+                        <p class="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
+                          {step.detail}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  {index < data.pipeline.length - 1 && (
+                    <div aria-hidden="true" class="ml-3 h-4 w-px bg-black/10 dark:bg-white/15"></div>
+                  )}
+                </li>
+              ))}
+            </ol>
+          </div>
+        )
+      }
+
+      {
+        data.stack.length > 0 && (
+          <div class="card rounded-2xl">
+            <h2 class="text-sm font-semibold">사용 기술</h2>
+            <ul class="mt-3 flex flex-wrap gap-2 text-xs text-gray-600 dark:text-gray-300">
+              {data.stack.map((item) => (
+                <li class="rounded-md border border-black/5 dark:border-white/10 px-2 py-1">{item}</li>
+              ))}
+            </ul>
+          </div>
+        )
+      }
+
+      <div class="card rounded-2xl">
+        <h2 class="text-sm font-semibold">비슷한 작업이 필요하신가요?</h2>
+        <p class="mt-2 text-xs text-gray-600 dark:text-gray-300">
+          반복되는 문서·운영 업무를 어디까지 줄일 수 있는지 함께 살펴봅니다.
+        </p>
+        <a href="/contact" class="mt-4 inline-block btn btn-primary text-xs px-4 py-2">문의하기</a>
+      </div>
+    </aside>
+  </div>
+
+  <div class="mt-16">
+    <a href="/automation" class="text-sm hover:underline">← 자동화 프로젝트 목록</a>
+  </div>
+</BaseLayout>

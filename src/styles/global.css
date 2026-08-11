@@ -46,6 +46,26 @@ a { @apply outline-none; }
 .dark .card { border-color: rgba(255,255,255,0.1); background: rgba(16,18,24,0.6); }
 .card:hover { transform: translateY(-2px); }
 
+/* ---- 본문 타이포그래피 (마크다운 렌더용) ---- */
+.prose-ds { @apply text-[15px] leading-relaxed text-gray-700 dark:text-gray-300; }
+.prose-ds h2 { @apply mt-10 mb-3 text-xl font-bold text-gray-900 dark:text-gray-100; }
+.prose-ds h2:first-child { @apply mt-0; }
+.prose-ds h3 { @apply mt-8 mb-2 text-lg font-semibold text-gray-900 dark:text-gray-100; }
+.prose-ds p { @apply my-4; }
+.prose-ds strong { @apply font-semibold text-gray-900 dark:text-gray-100; }
+.prose-ds ul { @apply my-4 pl-5 list-disc space-y-2; }
+.prose-ds ol { @apply my-4 pl-5 list-decimal space-y-2; }
+.prose-ds a { @apply underline underline-offset-2; }
+.prose-ds code {
+  @apply rounded px-1.5 py-0.5 text-[13px] font-mono;
+  background: rgba(0, 0, 0, 0.05);
+}
+.dark .prose-ds code { background: rgba(255, 255, 255, 0.1); }
+.prose-ds blockquote {
+  @apply my-6 pl-4 italic text-gray-600 dark:text-gray-400;
+  border-left: 3px solid var(--color-accent);
+}
+
 /* ---- Decorative Backgrounds ---- */
 .bg-grid {
   /* 흐릿한 그리드 */

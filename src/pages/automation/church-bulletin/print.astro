@@ -1,0 +1,324 @@
+---
+// 주보 인쇄뷰. BaseLayout(헤더·배경·다크모드)을 쓰지 않고 독립 문서로 둡니다.
+// 인쇄 시 화면 장식이 섞이지 않도록 A4 전용 스타일만 적용합니다.
+export const prerender = true;
+---
+
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <title>주보 | 이동수하우스</title>
+    <style>
+      @page {
+        size: A4;
+        margin: 14mm 14mm 12mm;
+      }
+
+      :root {
+        --ink: #111;
+        --muted: #666;
+        --rule: #d4d4d4;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        background: #f3f4f6;
+        color: var(--ink);
+        font-family: "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans KR", sans-serif;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+      }
+
+      /* 화면에서만 보이는 툴바 */
+      .toolbar {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 16px;
+        background: #fff;
+        border-bottom: 1px solid var(--rule);
+      }
+      .toolbar .grow { flex: 1; }
+      .toolbar button,
+      .toolbar a {
+        font: inherit;
+        font-size: 13px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--rule);
+        background: #fff;
+        color: var(--ink);
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .toolbar button.primary {
+        border: 0;
+        background: linear-gradient(135deg, #47a3ff, #6ee7ff);
+        color: #07263f;
+        font-weight: 600;
+      }
+      .hint { font-size: 12px; color: var(--muted); }
+
+      /* A4 용지 */
+      .sheet {
+        width: 210mm;
+        min-height: 297mm;
+        margin: 24px auto;
+        padding: 18mm 16mm;
+        background: #fff;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.12);
+      }
+
+      .masthead {
+        text-align: center;
+        padding-bottom: 10mm;
+        border-bottom: 2px solid var(--ink);
+      }
+      .church {
+        font-size: 26pt;
+        font-weight: 800;
+        letter-spacing: 6px;
+        margin: 0;
+      }
+      .service {
+        margin: 6px 0 0;
+        font-size: 12pt;
+        letter-spacing: 2px;
+        color: var(--muted);
+      }
+      .date {
+        margin: 2px 0 0;
+        font-size: 11pt;
+        color: var(--muted);
+      }
+
+      .sermon {
+        margin: 9mm 0;
+        text-align: center;
+      }
+      .sermon .title {
+        font-size: 20pt;
+        font-weight: 700;
+        margin: 0;
+      }
+      .sermon .verse {
+        margin: 6px 0 0;
+        font-size: 11pt;
+        color: var(--muted);
+      }
+
+      h2.section {
+        font-size: 12pt;
+        letter-spacing: 3px;
+        margin: 0 0 4mm;
+        padding-bottom: 2mm;
+        border-bottom: 1px solid var(--rule);
+      }
+
+      table.order {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11pt;
+      }
+      table.order td {
+        padding: 2.6mm 0;
+        border-bottom: 1px dotted var(--rule);
+        vertical-align: top;
+      }
+      table.order td.label {
+        width: 26mm;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+      table.order td.who {
+        width: 32mm;
+        text-align: right;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      ol.notices {
+        margin: 0;
+        padding-left: 6mm;
+        font-size: 10.5pt;
+        line-height: 1.75;
+      }
+      ol.notices li { margin-bottom: 1.5mm; }
+
+      .empty {
+        font-size: 10.5pt;
+        color: var(--muted);
+      }
+
+      .block { margin-top: 9mm; }
+
+      .footer {
+        margin-top: 12mm;
+        padding-top: 4mm;
+        border-top: 1px solid var(--rule);
+        text-align: center;
+        font-size: 9pt;
+        color: var(--muted);
+      }
+
+      @media print {
+        body { background: #fff; }
+        .toolbar { display: none !important; }
+        .sheet {
+          width: auto;
+          min-height: 0;
+          margin: 0;
+          padding: 0;
+          box-shadow: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="toolbar">
+      <strong style="font-size:14px">주보 미리보기</strong>
+      <span id="source" class="hint"></span>
+      <span class="grow"></span>
+      <span class="hint">인쇄 대화상자에서 &lsquo;PDF로 저장&rsquo;을 선택하세요</span>
+      <a href="/automation/church-bulletin/editor">← 입력으로</a>
+      <button id="printBtn" class="primary" type="button">인쇄 / PDF 저장</button>
+    </div>
+
+    <div class="sheet" id="sheet">
+      <header class="masthead">
+        <h1 class="church">예 원 교 회</h1>
+        <p class="service" id="serviceType">주일오전예배</p>
+        <p class="date" id="dateLabel"></p>
+      </header>
+
+      <section class="sermon">
+        <p class="title" id="sermonTitle"></p>
+        <p class="verse" id="scripture"></p>
+      </section>
+
+      <section class="block">
+        <h2 class="section">예 배 순 서</h2>
+        <table class="order">
+          <tbody id="orderBody"></tbody>
+        </table>
+      </section>
+
+      <section class="block">
+        <h2 class="section">광 고</h2>
+        <ol class="notices" id="noticeList"></ol>
+      </section>
+
+      <p class="footer">예원교회 · 주보는 예배자료 입력 내용으로 자동 생성되었습니다.</p>
+    </div>
+
+    <script>
+      import {
+        EMPTY,
+        parseMaterialText,
+        toBulletin,
+        fileNameFor,
+        type MaterialData,
+      } from "../../../lib/material";
+
+      const TOKEN_KEY = "dshouse_editor_token";
+      const DRAFT_KEY = "dshouse_bulletin_draft";
+
+      function el(id: string) {
+        return document.getElementById(id)!;
+      }
+
+      function escapeHtml(text: string) {
+        return text.replace(/[&<>"']/g, (ch) =>
+          ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[ch] as string,
+        );
+      }
+
+      function paint(data: MaterialData) {
+        const bulletin = toBulletin(data);
+
+        el("serviceType").textContent = bulletin.serviceType;
+        el("dateLabel").textContent = bulletin.dateLabel;
+        el("sermonTitle").textContent = bulletin.sermonTitle || "설교 제목 미입력";
+        el("scripture").textContent = bulletin.scripture;
+
+        el("orderBody").innerHTML = bulletin.order
+          .map(
+            (row) => `<tr>
+              <td class="label">${escapeHtml(row.label)}</td>
+              <td>${escapeHtml(row.content)}</td>
+              <td class="who">${escapeHtml(row.who ?? "")}</td>
+            </tr>`,
+          )
+          .join("");
+
+        const notices = bulletin.announcements;
+        el("noticeList").outerHTML = notices.length
+          ? `<ol class="notices" id="noticeList">${notices
+              .map((item) => `<li>${escapeHtml(item)}</li>`)
+              .join("")}</ol>`
+          : `<p class="empty" id="noticeList">광고 사항이 없습니다.</p>`;
+
+        document.title = `주보 ${data.serviceDate} | 예원교회`;
+      }
+
+      /** 1순위: 에디터가 넘긴 초안, 2순위: 버킷에 저장된 자료 */
+      async function load() {
+        const params = new URLSearchParams(location.search);
+        const date = params.get("date") ?? "";
+
+        const draftRaw = sessionStorage.getItem(DRAFT_KEY);
+        if (draftRaw) {
+          try {
+            const draft = JSON.parse(draftRaw) as MaterialData;
+            if (!date || draft.serviceDate === date) {
+              el("source").textContent = "입력 중인 내용";
+              paint(draft);
+              return;
+            }
+          } catch {
+            /* 초안이 깨졌으면 버킷으로 폴백 */
+          }
+        }
+
+        if (!date) {
+          el("source").textContent = "표시할 자료가 없습니다. 입력 화면에서 열어주세요.";
+          paint({ ...EMPTY });
+          return;
+        }
+
+        const token = sessionStorage.getItem(TOKEN_KEY);
+        if (!token) {
+          el("source").textContent = "토큰이 없어 저장된 자료를 불러올 수 없습니다.";
+          paint({ ...EMPTY, serviceDate: date });
+          return;
+        }
+
+        const name = fileNameFor(date);
+        const res = await fetch(`/api/bucket-file?name=${encodeURIComponent(name)}`, {
+          headers: { "x-editor-token": token },
+        });
+        if (!res.ok) {
+          el("source").textContent = `저장된 자료를 불러오지 못했습니다 (${res.status})`;
+          paint({ ...EMPTY, serviceDate: date });
+          return;
+        }
+        const parsed = parseMaterialText(await res.text(), { ...EMPTY });
+        parsed.serviceDate = date;
+        el("source").textContent = `${name} (저장본)`;
+        paint(parsed);
+      }
+
+      el("printBtn").addEventListener("click", () => window.print());
+      load();
+    </script>
+  </body>
+</html>

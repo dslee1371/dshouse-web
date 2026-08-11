@@ -1,0 +1,429 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+export const prerender = true;
+---
+
+<BaseLayout
+  title="예배자료 입력 | 이동수하우스"
+  description="예배자료를 입력하면 주보·PPT 생성용 자료로 정리되고, 버킷에 저장·불러올 수 있습니다."
+>
+  <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
+    <nav class="text-sm text-gray-500 dark:text-gray-400">
+      <a href="/automation" class="hover:underline">자동화 프로젝트</a>
+      <span aria-hidden="true" class="mx-2">/</span>
+      <a href="/automation/church-bulletin" class="hover:underline">주보 자동 생성</a>
+    </nav>
+    <h1 class="mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
+      <span class="gradient-text">예배자료 입력</span>
+    </h1>
+    <p class="mt-4 max-w-2xl text-gray-600 dark:text-gray-300">
+      담당자별 입력을 모아 주보와 PPT 생성용 자료를 만듭니다. 저장한 자료는 다음 주에 불러와 재사용할 수 있습니다.
+    </p>
+  </section>
+
+  <section class="mt-8">
+    <div id="token-gate" class="card rounded-2xl max-w-md">
+      <h2 class="font-semibold">토큰 입력</h2>
+      <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">사용하려면 공유 토큰이 필요합니다.</p>
+      <div class="mt-4 flex gap-2">
+        <input id="token-input" type="password" placeholder="토큰"
+               class="flex-1 rounded-lg border px-3 py-2 text-sm bg-white/80 dark:bg-white/5 dark:border-white/20" />
+        <button id="token-submit" class="btn btn-primary">입장</button>
+      </div>
+      <p id="token-error" class="mt-2 text-sm text-red-500 hidden">토큰이 올바르지 않습니다.</p>
+    </div>
+
+    <div id="app-wrap" class="hidden grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <!-- 왼쪽: 상태 / 파일명 / 저장된 자료 -->
+      <aside class="space-y-6">
+        <div class="card rounded-2xl">
+          <h2 class="text-sm font-semibold">제출 상태</h2>
+          <div id="statusList" class="mt-3 space-y-2 text-sm"></div>
+        </div>
+        <div class="card rounded-2xl">
+          <h2 class="text-sm font-semibold">검증 리포트</h2>
+          <ul id="issues" class="mt-3 space-y-2 text-sm"></ul>
+        </div>
+        <div class="card rounded-2xl">
+          <h2 class="text-sm font-semibold">파일명</h2>
+          <div id="fileName" class="mt-2 text-sm font-mono text-gray-600 dark:text-gray-300"></div>
+        </div>
+        <div class="card rounded-2xl">
+          <div class="flex items-center justify-between">
+            <h2 class="text-sm font-semibold">저장된 자료</h2>
+            <button id="refreshBtn" class="text-xs underline text-gray-500">새로고침</button>
+          </div>
+          <ul id="savedList" class="mt-3 space-y-2 text-sm"></ul>
+        </div>
+      </aside>
+
+      <!-- 가운데: 입력 폼 -->
+      <main>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h2 class="text-lg font-semibold">이번 주 예배자료</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-300">입력 → 저장 → 주보 생성 순서로 진행합니다.</p>
+          </div>
+          <div class="flex flex-wrap gap-2">
+            <button id="bulletinBtn" type="button" class="btn btn-ghost text-xs px-3 py-2">주보 만들기</button>
+            <button id="saveBtn" type="button" class="btn btn-primary text-xs px-3 py-2">저장하기</button>
+          </div>
+        </div>
+        <p id="saveStatus" class="mt-2 text-sm text-gray-500"></p>
+
+        <form id="materialForm" class="mt-6 space-y-6">
+          <section class="card rounded-2xl">
+            <h3 class="font-semibold">예배 정보</h3>
+            <div class="mt-3 grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="serviceDate" class="block text-xs text-gray-500 mb-1">예배 날짜</label>
+                <input id="serviceDate" type="date" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="serviceType" class="block text-xs text-gray-500 mb-1">예배 종류</label>
+                <select id="serviceType" class="w-full border rounded-lg px-3 py-2 text-sm">
+                  <option>주일오전예배</option>
+                  <option>수요예배</option>
+                  <option>금요기도회</option>
+                  <option>주일학교</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="card rounded-2xl">
+            <h3 class="font-semibold">찬양팀</h3>
+            <div class="mt-3 grid gap-4 md:grid-cols-2">
+              <div class="md:col-span-2">
+                <label for="praiseMain" class="block text-xs text-gray-500 mb-1">찬양 (한 줄에 한 곡씩)</label>
+                <textarea id="praiseMain" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                <p class="mt-1 text-xs text-gray-500">자동으로 1, 2, 3 순서 번호가 붙습니다.</p>
+              </div>
+              <div>
+                <label for="offeringHymn" class="block text-xs text-gray-500 mb-1">찬송-2 / 봉헌찬송</label>
+                <input id="offeringHymn" placeholder="예: 43장 1절만" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="hymnThree" class="block text-xs text-gray-500 mb-1">찬송-3</label>
+                <input id="hymnThree" placeholder="예: 315장" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="hymnFour" class="block text-xs text-gray-500 mb-1">찬송-4</label>
+                <input id="hymnFour" placeholder="예: 288장" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="specialSong" class="block text-xs text-gray-500 mb-1">특송</label>
+                <select id="specialSong" class="w-full border rounded-lg px-3 py-2 text-sm">
+                  <option value="remove">특송 슬라이드 제거</option>
+                  <option value="keep">특송 있음</option>
+                  <option value="none">확인 필요</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="card rounded-2xl">
+            <h3 class="font-semibold">예배 순서</h3>
+            <div class="mt-3 grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="responsiveReading" class="block text-xs text-gray-500 mb-1">교독문</label>
+                <input id="responsiveReading" placeholder="예: 교독문 64. 시편 148편" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="prayer" class="block text-xs text-gray-500 mb-1">기도</label>
+                <input id="prayer" placeholder="예: 김순규 장로" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div class="md:col-span-2 grid grid-cols-3 gap-3">
+                <div>
+                  <label for="rrFontSize" class="block text-xs text-gray-500 mb-1">교독문 글자크기</label>
+                  <input id="rrFontSize" type="number" min="20" max="72" step="1" value="40" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="rrOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
+                  <input id="rrOddColor" type="color" value="#000000" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                </div>
+                <div>
+                  <label for="rrEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
+                  <input id="rrEvenColor" type="color" value="#ffd966" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card rounded-2xl">
+            <h3 class="font-semibold">말씀과 설교</h3>
+            <div class="mt-3 grid gap-4 md:grid-cols-2">
+              <div>
+                <label for="scripture" class="block text-xs text-gray-500 mb-1">성경본문</label>
+                <input id="scripture" placeholder="예: 고린도전서 8장 1절 ~ 13절" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="sermonTitle" class="block text-xs text-gray-500 mb-1">설교 제목</label>
+                <input id="sermonTitle" placeholder="예: 자유와 사랑" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div class="md:col-span-2 grid grid-cols-3 gap-3">
+                <div>
+                  <label for="scriptureFontSize" class="block text-xs text-gray-500 mb-1">본문 글자크기</label>
+                  <input id="scriptureFontSize" type="number" min="20" max="72" step="1" value="40" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="scriptureOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
+                  <input id="scriptureOddColor" type="color" value="#000000" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                </div>
+                <div>
+                  <label for="scriptureEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
+                  <input id="scriptureEvenColor" type="color" value="#ffd966" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <section class="card rounded-2xl">
+            <h3 class="font-semibold">광고</h3>
+            <div class="mt-3 grid gap-4">
+              <div>
+                <label for="announcements" class="block text-xs text-gray-500 mb-1">광고 (한 줄에 하나씩)</label>
+                <textarea id="announcements" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+              </div>
+              <div>
+                <label for="notes" class="block text-xs text-gray-500 mb-1">추가 요청</label>
+                <textarea id="notes" rows="3" placeholder="PPT 수정 요청이나 방송실 전달사항" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+              </div>
+            </div>
+          </section>
+        </form>
+      </main>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  import {
+    FIELDS,
+    SAMPLE,
+    EMPTY,
+    buildMaterial,
+    parseMaterialText,
+    validate,
+    dateStamp,
+    fileNameFor,
+    dateFromFileName,
+    type MaterialData,
+  } from "../../../lib/material";
+
+  const TOKEN_KEY = "dshouse_editor_token";
+  const DRAFT_KEY = "dshouse_bulletin_draft";
+
+  const gate = document.getElementById("token-gate")!;
+  const appWrap = document.getElementById("app-wrap")!;
+  const tokenInput = document.getElementById("token-input") as HTMLInputElement;
+  const tokenSubmit = document.getElementById("token-submit")!;
+  const tokenError = document.getElementById("token-error")!;
+  const saveStatus = document.getElementById("saveStatus")!;
+  const savedList = document.getElementById("savedList")!;
+
+  let token = sessionStorage.getItem(TOKEN_KEY) || "";
+
+  function el(id: string) {
+    return document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
+  }
+
+  /** 폼 → 데이터 객체 */
+  function formData(): MaterialData {
+    const data = { ...EMPTY };
+    FIELDS.forEach((id) => {
+      const node = el(id);
+      if (node) data[id] = node.value;
+    });
+    return data;
+  }
+
+  /** 데이터 객체 → 폼 */
+  function applyData(data: Partial<MaterialData>) {
+    Object.entries(data).forEach(([id, value]) => {
+      const node = el(id);
+      if (node) node.value = value ?? "";
+    });
+    render();
+  }
+
+  function updateStatus(data: MaterialData) {
+    const groups: [string, boolean][] = [
+      ["찬양팀", Boolean(data.praiseMain && data.offeringHymn && data.hymnThree && data.hymnFour)],
+      ["예배순서", Boolean(data.responsiveReading && data.prayer)],
+      ["말씀/설교", Boolean(data.scripture && data.sermonTitle)],
+      ["광고", Boolean(data.announcements)],
+      ["검증", !validate(data).some(([level]) => level === "danger")],
+    ];
+    el("statusList").innerHTML = groups
+      .map(([label, done]) => {
+        const dotClass = done ? "bg-emerald-500" : "bg-amber-400";
+        const state = done ? "완료" : "대기";
+        return `<div class="flex items-center gap-2"><span class="inline-block w-2.5 h-2.5 rounded-full ${dotClass}"></span><span>${label} · ${state}</span></div>`;
+      })
+      .join("");
+  }
+
+  function render() {
+    const data = formData();
+    el("fileName").textContent = fileNameFor(data.serviceDate);
+    el("issues").innerHTML = validate(data)
+      .map(([level, text]) => {
+        const color =
+          level === "danger" ? "text-red-500" : level === "warn" ? "text-amber-500" : "text-emerald-600";
+        return `<li class="${color}">${text}</li>`;
+      })
+      .join("");
+    updateStatus(data);
+  }
+
+  function loadSample() {
+    applyData(SAMPLE);
+  }
+
+  // --- 버킷 연동 ---
+  function showGate(message?: string) {
+    sessionStorage.removeItem(TOKEN_KEY);
+    token = "";
+    appWrap.classList.add("hidden");
+    gate.classList.remove("hidden");
+    if (message) {
+      tokenError.textContent = message;
+      tokenError.classList.remove("hidden");
+    }
+  }
+
+  async function authedFetch(input: string, init: RequestInit = {}) {
+    const res = await fetch(input, {
+      ...init,
+      headers: { ...(init.headers || {}), "x-editor-token": token },
+    });
+    if (res.status === 401) {
+      showGate("토큰이 올바르지 않습니다.");
+      throw new Error("unauthorized");
+    }
+    return res;
+  }
+
+  async function loadBucketList() {
+    savedList.innerHTML = '<li class="text-gray-500">불러오는 중…</li>';
+    const res = await authedFetch("/api/bucket-list");
+    const items = await res.json();
+    if (!items.length) {
+      savedList.innerHTML = '<li class="text-gray-500">저장된 자료가 없습니다.</li>';
+      return items;
+    }
+    savedList.innerHTML = "";
+    for (const item of items) {
+      const li = document.createElement("li");
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className =
+        "w-full text-left rounded-lg border px-3 py-2 text-xs hover:bg-black/5 dark:hover:bg-white/10 dark:border-white/20";
+      const savedAt = item.savedAt ? new Date(item.savedAt).toLocaleString("ko-KR") : "";
+      btn.innerHTML = `<div class="font-medium">${item.name}</div><div class="text-gray-500">${savedAt}</div>`;
+      btn.addEventListener("click", () => loadFromBucket(item.name));
+      li.appendChild(btn);
+      savedList.appendChild(li);
+    }
+    return items;
+  }
+
+  async function loadInitial() {
+    const items = await loadBucketList();
+    if (items.length) {
+      await loadFromBucket(items[0].name);
+    } else {
+      loadSample();
+    }
+  }
+
+  async function loadFromBucket(name: string) {
+    saveStatus.textContent = "불러오는 중…";
+    const res = await authedFetch(`/api/bucket-file?name=${encodeURIComponent(name)}`);
+    if (!res.ok) {
+      saveStatus.textContent = "불러오기 실패";
+      return;
+    }
+    const text = await res.text();
+    const parsed = parseMaterialText(text, formData());
+    const date = dateFromFileName(name);
+    if (date) parsed.serviceDate = date;
+    applyData(parsed);
+    saveStatus.textContent = `"${name}" 불러옴`;
+  }
+
+  async function saveToBucket() {
+    const data = formData();
+    if (!dateStamp(data.serviceDate)) {
+      saveStatus.textContent = "예배 날짜를 먼저 선택하세요.";
+      return;
+    }
+    const name = fileNameFor(data.serviceDate);
+    saveStatus.textContent = "저장 중…";
+    const res = await authedFetch("/api/bucket-file", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, content: buildMaterial(data) }),
+    });
+    if (!res.ok) {
+      saveStatus.textContent = "저장 실패";
+      return;
+    }
+    saveStatus.textContent = `"${name}" 저장됨`;
+    loadBucketList();
+  }
+
+  /** 주보 인쇄뷰 열기 — 현재 입력값을 그대로 넘깁니다(저장 여부와 무관). */
+  function openBulletin() {
+    const data = formData();
+    if (!dateStamp(data.serviceDate)) {
+      saveStatus.textContent = "예배 날짜를 먼저 선택하세요.";
+      return;
+    }
+    if (validate(data).some(([level]) => level === "danger")) {
+      saveStatus.textContent = "검증 리포트의 빨간 항목을 먼저 확인하세요. 그래도 미리보기는 열립니다.";
+    }
+    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(data));
+    window.open(`/automation/church-bulletin/print?date=${data.serviceDate}`, "_blank");
+  }
+
+  // --- 이벤트 바인딩 ---
+  FIELDS.forEach((id) => {
+    const node = el(id);
+    if (!node) return;
+    node.addEventListener("input", render);
+    node.addEventListener("change", render);
+  });
+
+  document.getElementById("saveBtn")!.addEventListener("click", saveToBucket);
+  document.getElementById("bulletinBtn")!.addEventListener("click", openBulletin);
+  document.getElementById("refreshBtn")!.addEventListener("click", loadBucketList);
+
+  el("serviceDate").addEventListener("click", (e) => {
+    const target = e.target as HTMLInputElement & { showPicker?: () => void };
+    if (typeof target.showPicker === "function") target.showPicker();
+  });
+
+  tokenSubmit.addEventListener("click", async () => {
+    token = tokenInput.value.trim();
+    if (!token) return;
+    sessionStorage.setItem(TOKEN_KEY, token);
+    tokenError.classList.add("hidden");
+    gate.classList.add("hidden");
+    appWrap.classList.remove("hidden");
+    await loadInitial();
+  });
+
+  tokenInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") tokenSubmit.dispatchEvent(new Event("click"));
+  });
+
+  if (token) {
+    gate.classList.add("hidden");
+    appWrap.classList.remove("hidden");
+    loadInitial();
+  } else {
+    loadSample();
+  }
+</script>
