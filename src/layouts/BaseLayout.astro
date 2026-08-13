@@ -2,6 +2,7 @@
 import "../styles/global.css";
 import Seo from "../components/Seo.astro";
 import ThemeToggle from "../components/ThemeToggle.astro";
+import { company, businessLines } from "../data/company";
 
 const { title = "이동수하우스", description = "생활·환경 IT 솔루션" } = Astro.props;
 
@@ -152,16 +153,47 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
     </main>
 
     <footer class="mt-16 border-t border-black/5 dark:border-white/10">
-      <div class="mx-auto max-w-6xl px-4 py-8 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-          © {new Date().getFullYear()} 이동수하우스 · 생활과 환경을 위한 IT 솔루션
+      <div class="mx-auto max-w-6xl px-4 py-10 text-sm text-gray-500 dark:text-gray-400">
+        <div class="flex flex-col gap-6 md:flex-row md:justify-between">
+          <!-- 사업자 실체정보 -->
+          <div class="space-y-2">
+            <p class="font-semibold text-gray-700 dark:text-gray-200">{company.name}</p>
+            <ul class="flex flex-wrap gap-x-4 gap-y-1">
+              {
+                businessLines().map((line) => (
+                  <li>
+                    <span class="text-gray-400 dark:text-gray-500">{line.label}</span>
+                    <span class="ml-1.5">{line.value}</span>
+                  </li>
+                ))
+              }
+            </ul>
+            <p class="flex flex-wrap gap-x-4 gap-y-1">
+              <span>
+                <span class="text-gray-400 dark:text-gray-500">이메일</span>
+                <a href={`mailto:${company.email}`} class="ml-1.5 hover:underline">{company.email}</a>
+              </span>
+              <span>
+                <span class="text-gray-400 dark:text-gray-500">전화</span>
+                <a href={`tel:${company.phone.replace(/-/g, "")}`} class="ml-1.5 hover:underline">{company.phone}</a>
+              </span>
+            </p>
+          </div>
+
+          <nav class="flex flex-wrap gap-x-5 gap-y-2 md:justify-end md:self-start" aria-label="푸터 메뉴">
+            <a href="/services" class="hover:underline">Services</a>
+            <a href="/automation" class="hover:underline">자동화</a>
+            <a href="/works" class="hover:underline">Works</a>
+            <a href="/contact" class="hover:underline">문의하기</a>
+            <a href="/privacy" class="font-medium text-gray-600 hover:underline dark:text-gray-300">
+              개인정보처리방침
+            </a>
+          </nav>
+        </div>
+
+        <p class="mt-8 border-t border-black/5 pt-6 dark:border-white/10">
+          © {new Date().getFullYear()} {company.name} · 생활과 환경을 위한 IT 솔루션
         </p>
-        <nav class="flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-500 dark:text-gray-400" aria-label="푸터 메뉴">
-          <a href="/services" class="hover:underline">Services</a>
-          <a href="/automation" class="hover:underline">자동화</a>
-          <a href="/works" class="hover:underline">Works</a>
-          <a href="/contact" class="hover:underline">문의하기</a>
-        </nav>
       </div>
     </footer>
 

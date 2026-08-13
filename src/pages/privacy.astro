@@ -1,0 +1,198 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  company,
+  privacyOfficer,
+  dataProcessors,
+  privacyEffectiveDate,
+} from "../data/company";
+
+export const prerender = true;
+
+const collected = [
+  { item: "이름", why: "문의자 확인 및 호칭", required: "필수" },
+  { item: "이메일 주소", why: "문의에 대한 회신", required: "필수" },
+  { item: "문의 내용", why: "문의 사항 파악 및 상담", required: "필수" },
+];
+---
+
+<BaseLayout
+  title="개인정보처리방침 | 이동수하우스"
+  description="이동수하우스가 수집하는 개인정보 항목과 이용·보관·위탁 및 국외 이전에 관한 안내입니다."
+>
+  <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
+    <div aria-hidden="true"
+         class="absolute -top-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
+                bg-[radial-gradient(circle_at_center,_rgba(71,163,255,0.25),_transparent_60%)]"></div>
+    <h1 class="rise text-3xl md:text-5xl font-extrabold leading-tight">
+      <span class="gradient-text">개인정보처리방침</span>
+    </h1>
+    <p class="rise mt-4 max-w-2xl text-gray-600 dark:text-gray-300" style="--rise-delay:110ms">
+      {company.name}는 문의 접수를 위해 최소한의 개인정보만 수집하며, 수집한 정보가 어디로 가는지 숨기지 않습니다.
+    </p>
+    <p class="rise mt-4 text-sm text-gray-500 dark:text-gray-400" style="--rise-delay:180ms">
+      시행일: {privacyEffectiveDate}
+    </p>
+  </section>
+
+  <!-- 요약 -->
+  <section data-reveal class="mt-10">
+    <div class="card rounded-2xl bg-[linear-gradient(135deg,rgba(71,163,255,0.08),rgba(110,231,255,0.08))]">
+      <h2 class="font-semibold">한 문단 요약</h2>
+      <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
+        문의 폼으로 <strong>이름·이메일·문의 내용</strong>만 받습니다. 이 정보는 문의에 답변하기 위해서만 쓰고,
+        폼 접수는 미국 서비스인 <strong>Formspree</strong>를 통해 처리되므로 해당 정보가 <strong>국외로 이전</strong>됩니다.
+        답변이 끝나고 <strong>3년</strong>이 지나면 파기합니다. 언제든 열람·삭제를 요청하실 수 있습니다.
+      </p>
+    </div>
+  </section>
+
+  <div class="mt-12 prose-ds max-w-3xl" data-reveal>
+    <h2>1. 수집하는 개인정보 항목</h2>
+    <p>{company.name}는 문의 응대를 위해 아래 항목을 수집합니다.</p>
+    <table class="w-full text-sm my-4">
+      <thead>
+        <tr class="border-b border-black/10 dark:border-white/15 text-left">
+          <th class="py-2 font-semibold">항목</th>
+          <th class="py-2 font-semibold">이용 목적</th>
+          <th class="py-2 font-semibold">구분</th>
+        </tr>
+      </thead>
+      <tbody>
+        {
+          collected.map((row) => (
+            <tr class="border-b border-black/5 dark:border-white/10">
+              <td class="py-2">{row.item}</td>
+              <td class="py-2">{row.why}</td>
+              <td class="py-2">{row.required}</td>
+            </tr>
+          ))
+        }
+      </tbody>
+    </table>
+    <p>
+      주민등록번호 등 고유식별정보와 민감정보는 수집하지 않습니다. 별도의 회원가입 절차가 없으며,
+      광고·마케팅 목적의 수집이나 제3자 판매도 하지 않습니다.
+    </p>
+
+    <h2>2. 개인정보의 이용 목적</h2>
+    <p>
+      수집한 정보는 <strong>문의에 대한 답변과 상담 진행</strong>에만 사용합니다.
+      이 목적 외의 용도로 이용하지 않으며, 목적이 변경될 경우 사전에 동의를 받습니다.
+    </p>
+
+    <h2>3. 보유 및 이용 기간</h2>
+    <p>
+      문의 처리가 완료된 날로부터 <strong>3년</strong>간 보관한 뒤 지체 없이 파기합니다.
+      상담 이력을 남겨 후속 문의에 이어서 대응하기 위한 기간이며,
+      「전자상거래 등에서의 소비자보호에 관한 법률」의 소비자 불만·분쟁 처리 기록 보존 기간을 따릅니다.
+    </p>
+    <p>
+      정보주체가 그 전에 삭제를 요청하면 관련 법령상 보존 의무가 없는 한 즉시 파기합니다.
+      전자적 파일은 복구할 수 없는 방법으로 삭제합니다.
+    </p>
+
+    <h2>4. 처리 위탁 및 국외 이전</h2>
+    <p>
+      이 웹사이트의 문의 폼은 외부 폼 접수 서비스를 이용합니다.
+      따라서 입력하신 정보는 아래 사업자의 <strong>국외 서버로 이전</strong>됩니다.
+      이는 문의를 접수하고 전달받기 위해 반드시 필요한 절차이며, 동의하지 않으실 경우
+      아래 이메일이나 전화로 직접 연락 주시면 동일하게 상담을 받으실 수 있습니다.
+    </p>
+    {
+      dataProcessors.map((processor) => (
+        <div class="card rounded-2xl my-5">
+          <h3 class="font-semibold">{processor.name}</h3>
+          <dl class="mt-3 grid gap-2 text-sm sm:grid-cols-[7rem_minmax(0,1fr)]">
+            <dt class="text-gray-500 dark:text-gray-400">이전 국가</dt>
+            <dd>{processor.country}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">이전 항목</dt>
+            <dd>{processor.items}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">이전 목적</dt>
+            <dd>{processor.purpose}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">이전 방법</dt>
+            <dd>{processor.method}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">보유 기간</dt>
+            <dd>{processor.retention}</dd>
+            <dt class="text-gray-500 dark:text-gray-400">방침 확인</dt>
+            <dd>
+              <a href={processor.contact} rel="noopener noreferrer" target="_blank" class="underline underline-offset-2">
+                {processor.name} 개인정보처리방침
+              </a>
+            </dd>
+          </dl>
+        </div>
+      ))
+    }
+
+    <h2>5. 제3자 제공</h2>
+    <p>
+      위 4항의 처리 위탁을 제외하고, 정보주체의 동의 없이 개인정보를 제3자에게 제공하지 않습니다.
+      다만 법령에 따라 수사기관이 적법한 절차로 요구하는 경우에는 예외로 합니다.
+    </p>
+
+    <h2>6. 정보주체의 권리와 행사 방법</h2>
+    <p>정보주체는 언제든지 아래 권리를 행사할 수 있습니다.</p>
+    <ul>
+      <li>개인정보 열람 요구</li>
+      <li>오류가 있을 경우 정정 요구</li>
+      <li>삭제 요구</li>
+      <li>처리 정지 요구</li>
+    </ul>
+    <p>
+      아래 개인정보 보호책임자에게 이메일 또는 전화로 요청하시면 지체 없이 조치하고 결과를 알려드립니다.
+      대리인을 통한 요구도 가능합니다.
+    </p>
+
+    <h2>7. 쿠키 및 브라우저 저장소</h2>
+    <p>
+      광고·분석 목적의 추적 쿠키는 사용하지 않습니다.
+      다만 화면 테마(밝게/어둡게) 설정을 기억하기 위해 브라우저의 로컬 저장소를 사용하며,
+      이 값은 방문자를 식별하지 않고 브라우저 안에만 남습니다. 브라우저 설정에서 언제든 삭제할 수 있습니다.
+    </p>
+
+    <h2>8. 개인정보의 안전성 확보 조치</h2>
+    <ul>
+      <li>개인정보에 접근할 수 있는 인원을 최소한으로 제한합니다.</li>
+      <li>웹사이트 전 구간에 HTTPS를 적용해 전송 구간을 암호화합니다.</li>
+      <li>보유 기간이 지난 정보는 복구 불가능한 방법으로 파기합니다.</li>
+    </ul>
+
+    <h2>9. 개인정보 보호책임자</h2>
+    <p>
+      개인정보 처리에 관한 문의, 불만 처리, 피해 구제는 아래로 연락 주시면 신속히 답변드립니다.
+    </p>
+    <div class="card rounded-2xl my-5">
+      <dl class="grid gap-2 text-sm sm:grid-cols-[7rem_minmax(0,1fr)]">
+        <dt class="text-gray-500 dark:text-gray-400">책임자</dt>
+        <dd>{privacyOfficer.name} ({privacyOfficer.title})</dd>
+        <dt class="text-gray-500 dark:text-gray-400">이메일</dt>
+        <dd>{privacyOfficer.email}</dd>
+        <dt class="text-gray-500 dark:text-gray-400">전화</dt>
+        <dd>{privacyOfficer.phone}</dd>
+      </dl>
+    </div>
+
+    <h2>10. 권익 침해 구제 방법</h2>
+    <p>
+      개인정보 침해로 인한 신고나 상담이 필요하시면 아래 기관에 문의하실 수 있습니다.
+    </p>
+    <ul>
+      <li>개인정보분쟁조정위원회 — 1833-6972 / www.kopico.go.kr</li>
+      <li>개인정보침해신고센터 — 118 / privacy.kisa.or.kr</li>
+      <li>대검찰청 사이버수사과 — 1301 / www.spo.go.kr</li>
+      <li>경찰청 사이버수사국 — 182 / ecrm.police.go.kr</li>
+    </ul>
+
+    <h2>11. 방침의 변경</h2>
+    <p>
+      이 방침의 내용이 추가·삭제·수정될 경우 시행 최소 7일 전에 이 페이지를 통해 알립니다.
+      다만 정보주체의 권리에 중대한 변경이 생기는 경우에는 최소 30일 전에 알립니다.
+    </p>
+    <p class="text-sm text-gray-500 dark:text-gray-400">시행일: {privacyEffectiveDate}</p>
+  </div>
+
+  <section data-reveal class="mt-12">
+    <a href="/contact" class="text-sm hover:underline">← 문의하기로 돌아가기</a>
+  </section>
+</BaseLayout>
