@@ -44,13 +44,19 @@ const works = defineCollection({
         }),
       )
       .default([]),
-    /** 파이프라인 단계 — 상세 페이지 사이드바에 렌더 */
+    /**
+     * 진행 순서 — 상세 페이지 사이드바에 렌더됩니다.
+     * actor는 "이 단계를 사람이 하는가, 자동으로 되는가"를 나타냅니다.
+     * 방문자에게는 서버 구조보다 이쪽이 훨씬 중요한 정보입니다.
+     */
     pipeline: z
       .array(
         z.object({
           label: z.string(),
           detail: z.string().optional(),
-          where: z.enum(["web", "cloud", "local"]).default("web"),
+          /** 이 단계에서 실제로 손대는 항목. 칩으로 강조 렌더됩니다. */
+          items: z.array(z.string()).default([]),
+          actor: z.enum(["담당자", "자동"]).default("자동"),
         }),
       )
       .default([]),

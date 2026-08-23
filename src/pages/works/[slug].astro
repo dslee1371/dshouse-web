@@ -20,17 +20,14 @@ const { entry } = Astro.props as Props;
 const { Content } = await entry.render();
 const data = entry.data;
 
-const whereLabel: Record<string, string> = {
-  web: "웹",
-  cloud: "클라우드",
-  local: "로컬",
+// 손이 가는 단계와 알아서 되는 단계를 색으로 구분합니다.
+const actorStyle: Record<string, string> = {
+  담당자: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  자동: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
 };
 
-const whereStyle: Record<string, string> = {
-  web: "border-sky-500/40 bg-sky-500/10 text-sky-700 dark:text-sky-300",
-  cloud: "border-violet-500/40 bg-violet-500/10 text-violet-700 dark:text-violet-300",
-  local: "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-};
+const autoCount = (steps: { actor: string }[]) =>
+  steps.filter((s) => s.actor === "자동").length;
 ---
 
 <BaseLayout title={`${data.title} | 이동수하우스`} description={data.summary}>
@@ -131,7 +128,10 @@ const whereStyle: Record<string, string> = {
       {
         data.pipeline.length > 0 && (
           <div class="card rounded-2xl" data-reveal data-reveal-delay="1">
-            <h2 class="text-sm font-semibold">파이프라인</h2>
+            <h2 class="text-sm font-semibold">진행 순서</h2>
+            <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+              {data.pipeline.length}단계 중 {autoCount(data.pipeline)}단계가 자동입니다
+            </p>
             <ol class="mt-4 space-y-1">
               {data.pipeline.map((step, index) => (
                 <li>
@@ -142,14 +142,23 @@ const whereStyle: Record<string, string> = {
                     <div>
                       <div class="flex flex-wrap items-center gap-2">
                         <span class="text-sm font-medium">{step.label}</span>
-                        <span class={`rounded-md border px-1.5 py-0.5 text-[10px] ${whereStyle[step.where]}`}>
-                          {whereLabel[step.where]}
+                        <span class={`rounded-md border px-1.5 py-0.5 text-[10px] ${actorStyle[step.actor]}`}>
+                          {step.actor}
                         </span>
                       </div>
                       {step.detail && (
                         <p class="mt-1 text-xs leading-relaxed text-gray-600 dark:text-gray-300">
                           {step.detail}
                         </p>
+                      )}
+                      {step.items.length > 0 && (
+                        <ul class="mt-2 flex flex-wrap gap-1.5">
+                          {step.items.map((item) => (
+                            <li class="rounded-md border border-amber-500/40 bg-amber-500/10 px-2 py-1 text-[11px] font-medium text-amber-800 dark:text-amber-300">
+                              {item}
+                            </li>
+                          ))}
+                        </ul>
                       )}
                     </div>
                   </div>
