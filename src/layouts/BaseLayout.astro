@@ -17,11 +17,10 @@ const navItems = [
   { href: "/ai-service", label: "AI 서비스" },
   { href: "/worship-ppt", label: "예배 PPT" },
   { href: "/works", label: "Works" },
-  { href: "/automation", label: "자동화" },
   { href: "/contact", label: "Contact" },
 ];
 
-// 하위 경로까지 현재 메뉴로 인식 (예: /automation/church-bulletin → 자동화)
+// 하위 경로까지 현재 메뉴로 인식 (예: /works/church-bulletin → Works)
 const path = Astro.url.pathname.replace(/\/$/, "") || "/";
 const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
@@ -184,7 +183,6 @@ const isCurrent = (href: string) => path === href || path.startsWith(`${href}/`)
           <nav class="flex flex-wrap gap-x-5 gap-y-2 md:justify-end md:self-start" aria-label="푸터 메뉴">
             <a href="/services" class="hover:underline">Services</a>
             <a href="/worship-ppt" class="hover:underline">예배 PPT</a>
-            <a href="/automation" class="hover:underline">자동화</a>
             <a href="/works" class="hover:underline">Works</a>
             <a href="/contact" class="hover:underline">문의하기</a>
             <a href="/privacy" class="font-medium text-gray-600 hover:underline dark:text-gray-300">

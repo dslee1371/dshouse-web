@@ -5,7 +5,7 @@ export const prerender = true;
 
 const APP_URL = "https://worshipppt.dsdshouse.com";
 
-// 앱이 실제로 만들어 주는 슬라이드 종류
+// 생성기가 만들어 주는 슬라이드 종류
 const slideKinds = [
   {
     title: "예배 순서",
@@ -27,8 +27,8 @@ const slideKinds = [
 ---
 
 <BaseLayout
-  title="예배 PPT 생성기 | 이동수하우스"
-  description="예배 순서·찬양 가사·성경 본문·설교 슬라이드를 만들고 Google Slides나 PPTX로 내보내는 도구입니다."
+  title="예배 PPT | 이동수하우스"
+  description="예배 슬라이드를 만드는 두 가지 방법 — 바로 쓰는 생성기와 교회에 맞춘 자동화 구축."
 >
   <!-- HERO -->
   <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
@@ -39,46 +39,111 @@ const slideKinds = [
          class="absolute -bottom-28 -right-10 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
                 bg-[radial-gradient(circle_at_center,_rgba(110,231,255,0.25),_transparent_60%)]"></div>
 
-    <span class="inline-block rounded-full border px-3 py-1 text-xs">운영 중 · 무료 사용</span>
-
-    <h1 class="rise mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
-      <span class="gradient-text">예배 PPT 생성기</span>
+    <h1 class="rise text-3xl md:text-5xl font-extrabold leading-tight">
+      <span class="gradient-text">예배 PPT</span>
     </h1>
     <p class="rise mt-4 max-w-2xl text-gray-600 dark:text-gray-300" style="--rise-delay:110ms">
-      예배 순서, 찬양 가사, 성경 본문, 설교 슬라이드를 만들고
-      Google Slides나 PPTX 파일로 내보냅니다. 매주 같은 작업을 반복하는 방송실을 위한 도구입니다.
+      매주 반복되는 예배 슬라이드 작업을 줄이는 두 가지 방법입니다.
+      바로 써볼 수 있는 생성기와, 교회 사정에 맞춰 만드는 자동화입니다.
     </p>
-
-    <div class="rise mt-8 flex flex-wrap items-center gap-3" style="--rise-delay:220ms">
-      <a
-        href={APP_URL}
-        target="_blank"
-        rel="noopener noreferrer"
-        class="btn btn-primary"
-      >
-        생성기 열기
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-             class="ml-2" aria-hidden="true">
-          <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-          <path d="M15 3h6v6M10 14L21 3" />
-        </svg>
-        <span class="sr-only">(새 창에서 열림)</span>
-      </a>
-      <a href="/contact" class="btn btn-ghost">우리 교회에 맞게 문의</a>
-    </div>
   </section>
 
-  <!-- 무엇을 만들어 주나 -->
-  <section data-reveal class="mt-14">
-    <h2 class="text-2xl font-bold">무엇을 만들어 주나</h2>
+  <!-- 두 갈래 -->
+  <section data-reveal class="mt-12">
+    <h2 class="text-2xl font-bold">두 가지 방법</h2>
     <p class="mt-2 text-gray-600 dark:text-gray-300">
-      주보에 들어가는 내용을 그대로 슬라이드로 옮깁니다.
+      가진 자료와 상황에 따라 맞는 쪽이 다릅니다.
     </p>
+
+    <div class="mt-6 grid gap-6 md:grid-cols-2">
+      <!-- 1) 생성기 -->
+      <article
+        class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
+        data-reveal
+        data-reveal-delay="1"
+      >
+        <div class="card card-linked rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
+          <header class="flex items-start justify-between gap-3">
+            <h3 class="text-lg font-semibold">예배 PPT 생성기</h3>
+            <span class="shrink-0 rounded-full border border-emerald-500/40 px-2 py-1 text-xs text-emerald-600 dark:text-emerald-400">
+              바로 사용
+            </span>
+          </header>
+          <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+            가사와 본문을 입력하면 슬라이드를 만들어 줍니다.
+            악보 파일이 없어도 되고, 어느 교회에서나 쓸 수 있습니다.
+          </p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+            <li>· 예배 순서 · 찬양 가사 · 성경 본문 · 설교 슬라이드</li>
+            <li>· Google Slides 또는 PPTX로 내보내기</li>
+            <li>· 설치 없이 브라우저에서</li>
+          </ul>
+          <div class="mt-6 pt-4 border-t border-black/5 dark:border-white/10">
+            <a
+              href={APP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              class="text-sm font-medium hover:underline"
+            >
+              생성기 열기
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                   class="inline-block ml-1 -mt-0.5" aria-hidden="true">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                <path d="M15 3h6v6M10 14L21 3" />
+              </svg>
+              <span class="sr-only">(새 창에서 열림)</span>
+            </a>
+          </div>
+        </div>
+      </article>
+
+      <!-- 2) 자동화 구축 -->
+      <article
+        class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
+        data-reveal
+        data-reveal-delay="2"
+      >
+        <div class="card card-linked rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
+          <header class="flex items-start justify-between gap-3">
+            <h3 class="text-lg font-semibold">
+              <a href="/works/church-bulletin" class="hover:underline">예배자료 자동화 구축</a>
+            </h3>
+            <span class="shrink-0 rounded-full border px-2 py-1 text-xs">맞춤 구축</span>
+          </header>
+          <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+            담당자별 입력을 한 화면에 모으고, 주보와 예배 PPT를 함께 만듭니다.
+            이미 가진 악보 자산과 예배 형식을 그대로 씁니다.
+          </p>
+          <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+            <li>· 담당자 입력 폼 + 실시간 검증</li>
+            <li>· 주보 PDF 자동 조판</li>
+            <li>· 보유한 악보로 슬라이드 조립</li>
+          </ul>
+          <div class="mt-6 pt-4 border-t border-black/5 dark:border-white/10 flex flex-wrap gap-4">
+            <a href="/works/church-bulletin" class="text-sm font-medium hover:underline">
+              예원교회 사례 보기 →
+            </a>
+            <a href="/contact" class="text-sm text-gray-500 dark:text-gray-400 hover:underline">
+              구축 문의
+            </a>
+          </div>
+        </div>
+      </article>
+    </div>
+
+    <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
+      먼저 생성기를 써보고, 손이 더 가는 부분이 보이면 그때 자동화를 붙이는 순서를 권합니다.
+    </p>
+  </section>
+
+  <!-- 생성기 상세 -->
+  <section data-reveal class="mt-16">
+    <h2 class="text-2xl font-bold">생성기가 만들어 주는 슬라이드</h2>
     <div class="mt-6 grid gap-6 md:grid-cols-2">
       {
         slideKinds.map((kind, index) => (
-          <div class="card rounded-2xl" data-reveal data-reveal-delay={String(index + 1)}>
+          <div class="card rounded-2xl" data-reveal data-reveal-delay={String((index % 4) + 1)}>
             <h3 class="font-semibold">{kind.title}</h3>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">{kind.detail}</p>
           </div>
@@ -108,33 +173,18 @@ const slideKinds = [
     </div>
   </section>
 
-  <!-- 어디서 시작됐나 -->
-  <section data-reveal class="mt-14">
-    <div class="card rounded-2xl bg-[linear-gradient(135deg,rgba(71,163,255,0.08),rgba(110,231,255,0.08))]">
-      <h2 class="text-xl font-bold">어디서 시작됐나</h2>
-      <p class="mt-3 text-sm leading-relaxed text-gray-700 dark:text-gray-300">
-        예원교회의 예배자료를 자동화하면서 시작됐습니다. 담당자 입력을 모아 주보를 만드는 것까지는
-        풀었지만, 슬라이드 디자인은 매주 손이 갔습니다. 이 도구는 그 부분을 떼어내
-        어느 교회에서나 쓸 수 있게 만든 것입니다.
-      </p>
-      <a href="/automation/church-bulletin" class="mt-4 inline-block text-sm font-medium hover:underline">
-        예원교회 주보 자동화 사례 보기 →
-      </a>
-    </div>
-  </section>
-
   <!-- CTA -->
   <section data-reveal class="mt-16 text-center rounded-2xl p-10 border border-black/5 dark:border-white/10
                   bg-[linear-gradient(135deg,rgba(71,163,255,0.12),rgba(110,231,255,0.12))]">
     <h2 class="text-2xl font-bold">먼저 써보세요</h2>
     <p class="mt-2 text-gray-600 dark:text-gray-300">
-      가입 없이 바로 만들어 볼 수 있습니다. 교회 사정에 맞춘 조정이 필요하면 알려주세요.
+      써본 뒤에 교회 사정에 맞춘 조정이 필요하면 알려주세요.
     </p>
     <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
       <a href={APP_URL} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
         생성기 열기
       </a>
-      <a href="/contact" class="btn btn-ghost">상담 요청</a>
+      <a href="/contact" class="btn btn-ghost">구축 상담</a>
     </div>
   </section>
 </BaseLayout>

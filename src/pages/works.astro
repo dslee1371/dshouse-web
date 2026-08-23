@@ -1,9 +1,34 @@
 ---
+import { getCollection } from "astro:content";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
 export const prerender = true;
+
+const entries = (await getCollection("works")).sort(
+  (a, b) => a.data.order - b.data.order,
+);
+
+// detail: true 인 항목만 상세 페이지를 가집니다.
+const projects = entries.map((entry) => ({
+  entry,
+  hasDetail: entry.data.detail,
+}));
+
+// 실제로 쓰인 카테고리만 필터로 노출
+const categories = [...new Set(entries.map((e) => e.data.category))];
+
+const statusStyle: Record<string, string> = {
+  운영: "border-emerald-500/40 text-emerald-600 dark:text-emerald-400",
+  파일럿: "border-amber-500/40 text-amber-600 dark:text-amber-400",
+  시제품: "border-sky-500/40 text-sky-600 dark:text-sky-400",
+  샘플: "border-gray-400/40 text-gray-500 dark:text-gray-400",
+};
 ---
 
-<BaseLayout title="Works | 이동수하우스" description="샘플/파일럿/운영 사례">
+<BaseLayout
+  title="Works | 이동수하우스"
+  description="자동화·공공데이터·하이브리드 프로젝트 사례입니다. 공개 가능한 범위에서 요약했습니다."
+>
   <!-- HERO -->
   <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
     <div aria-hidden="true" class="absolute -top-24 -left-24 w-[520px] h-[520px] rounded-full blur-3xl opacity-60 pointer-events-none
@@ -14,88 +39,134 @@ export const prerender = true;
     <h1 class="rise text-3xl md:text-5xl font-extrabold leading-tight">
       <span class="gradient-text">Works</span>
     </h1>
-    <p class="mt-4 max-w-2xl text-gray-600 dark:text-gray-300">
+    <p class="rise mt-4 max-w-2xl text-gray-600 dark:text-gray-300" style="--rise-delay:110ms">
       작은 실험에서 시작해 운영으로 이어진 사례들입니다. 공개 가능한 범위에서 요약했습니다.
-    </p>
-    <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
-      매주 반복되는 업무를 자동화한 프로젝트는
-      <a href="/automation" class="underline underline-offset-2">자동화 프로젝트</a>에서 따로 정리하고 있습니다.
     </p>
   </section>
 
-  <!-- 카드 리스트 -->
-  <section class="mt-12 grid gap-6 md:grid-cols-2">
-    <!-- 프로젝트 1 -->
-    <article class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]" data-reveal data-reveal-delay="1">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
-        <header class="flex items-start justify-between gap-3">
-          <h3 class="text-lg font-semibold">대기질 알림 앱 (시제품)</h3>
-          <span class="rounded-full border px-2 py-1 text-xs">공공데이터</span>
-        </header>
-        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-          지역별 미세먼지/오존 지수 알림 · 위젯. 캐시 전략으로 API 비용 절감.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 데이터: AirKorea/Open API</li>
-          <li>• 기능: 지역 즐겨찾기, 지수 변동 알림</li>
-          <li>• 결과: 사용자 테스트 1주 → 개선 포인트 도출</li>
-        </ul>
-      </div>
-    </article>
+  <!-- 필터 -->
+  <section data-reveal class="mt-10">
+    <div class="flex flex-wrap items-center gap-2" role="group" aria-label="분야로 거르기">
+      <button
+        type="button"
+        class="filter-chip is-active rounded-full border px-4 py-2 text-sm"
+        data-filter="all"
+        aria-pressed="true"
+      >
+        전체 <span class="ml-1 text-xs opacity-60">{entries.length}</span>
+      </button>
+      {
+        categories.map((category) => (
+          <button
+            type="button"
+            class="filter-chip rounded-full border px-4 py-2 text-sm"
+            data-filter={category}
+            aria-pressed="false"
+          >
+            {category}
+            <span class="ml-1 text-xs opacity-60">
+              {entries.filter((e) => e.data.category === category).length}
+            </span>
+          </button>
+        ))
+      }
+    </div>
 
-    <!-- 프로젝트 2 -->
-    <article class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]" data-reveal data-reveal-delay="2">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
-        <header class="flex items-start justify-between gap-3">
-          <h3 class="text-lg font-semibold">스마트 오피스텔 관리 대시보드 (PoC)</h3>
-          <span class="rounded-full border px-2 py-1 text-xs">하이브리드</span>
-        </header>
-        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-          전력/온도/EV 충전 로그를 수집·시각화. 경량 장비와 웹 대시보드 연동.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 데이터: 센서/미터 수집 + 서버 캐시</li>
-          <li>• 기능: 이상치 알림, 월간 리포트</li>
-          <li>• 결과: 운영 비용/에너지 사용량 가시화</li>
-        </ul>
-      </div>
-    </article>
+    <!-- 카드 목록 -->
+    <div id="project-grid" class="mt-8 grid gap-6 md:grid-cols-2">
+      {
+        projects.map(({ entry, hasDetail }, index) => {
+          const data = entry.data;
+          const href = `/works/${entry.slug}`;
+          return (
+            <article
+              class="project-card p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
+              data-category={data.category}
+              data-reveal
+              data-reveal-delay={String((index % 4) + 1)}
+            >
+              <div
+                class:list={[
+                  "card rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col",
+                  hasDetail && "card-linked",
+                ]}
+              >
+                <header class="flex items-start justify-between gap-3">
+                  <h2 class="text-lg font-semibold">
+                    {hasDetail ? (
+                      <a href={href} class="hover:underline">
+                        {data.title}
+                      </a>
+                    ) : (
+                      data.title
+                    )}
+                  </h2>
+                  <span class={`shrink-0 rounded-full border px-2 py-1 text-xs ${statusStyle[data.status]}`}>
+                    {data.status}
+                  </span>
+                </header>
 
-    <!-- 프로젝트 3 -->
-    <article class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]" data-reveal data-reveal-delay="3">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
-        <header class="flex items-start justify-between gap-3">
-          <h3 class="text-lg font-semibold">소규모 단체 예약·공지 플랫폼</h3>
-          <span class="rounded-full border px-2 py-1 text-xs">운영</span>
-        </header>
-        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-          예약, 출입 QR, 공지 유통을 한 화면에서. 관리자용 경량 CMS 포함.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 기능: 예약 승인/대기, 공지 스케줄</li>
-          <li>• 운영: 백업/모니터링/간편 리포트</li>
-          <li>• 결과: 응답시간 단축, 중복 예약 감소</li>
-        </ul>
-      </div>
-    </article>
+                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                  {data.category}
+                  {data.org && <span> · {data.org}</span>}
+                </p>
 
-    <!-- 프로젝트 4 (샘플) -->
-    <article class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]" data-reveal data-reveal-delay="4">
-      <div class="card rounded-2xl bg-white/80 dark:bg-white/5">
-        <header class="flex items-start justify-between gap-3">
-          <h3 class="text-lg font-semibold">지도 시각화 포털 (샘플)</h3>
-          <span class="rounded-full border px-2 py-1 text-xs">데이터</span>
-        </header>
-        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-          공공데이터 + 지도 SDK로 지역 서비스를 한 화면에 모으는 실험.
-        </p>
-        <ul class="mt-4 text-sm space-y-2">
-          <li>• 데이터: 교통/시설/안전</li>
-          <li>• 기능: 필터/검색/공유 링크</li>
-          <li>• 결과: 커뮤니티 피드백 수집</li>
-        </ul>
-      </div>
-    </article>
+                <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">{data.summary}</p>
+
+                {(data.before || data.after) && (
+                  <div class="mt-4 flex items-center gap-3 text-sm">
+                    <span class="text-gray-500 line-through decoration-gray-400">{data.before}</span>
+                    <span aria-hidden="true" class="text-gray-400">→</span>
+                    <span class="font-semibold gradient-text">{data.after}</span>
+                  </div>
+                )}
+
+                {data.highlights.length > 0 && (
+                  <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+                    {data.highlights.map((item) => (
+                      <li>· {item}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {data.stack.length > 0 && (
+                  <ul class="mt-4 flex flex-wrap gap-2 text-xs text-gray-500 dark:text-gray-400">
+                    {data.stack.map((item) => (
+                      <li class="rounded-md border border-black/5 dark:border-white/10 px-2 py-1">{item}</li>
+                    ))}
+                  </ul>
+                )}
+
+                {(hasDetail || data.tool) && (
+                  <div class="mt-6 pt-4 border-t border-black/5 dark:border-white/10 flex flex-wrap items-center gap-4 text-sm">
+                    {hasDetail && (
+                      <a href={href} class="font-medium hover:underline">
+                        자세히 보기 →
+                      </a>
+                    )}
+                    {data.tool && (
+                      <a
+                        href={data.tool.href}
+                        target={data.tool.external ? "_blank" : undefined}
+                        rel={data.tool.external ? "noopener noreferrer" : undefined}
+                        class="text-gray-500 dark:text-gray-400 hover:underline"
+                      >
+                        {data.tool.label}
+                        {data.tool.gated && <span class="ml-1 text-xs">🔒</span>}
+                      </a>
+                    )}
+                  </div>
+                )}
+              </div>
+            </article>
+          );
+        })
+      }
+    </div>
+
+    <p id="empty-state" class="mt-8 hidden text-sm text-gray-500 dark:text-gray-400">
+      해당 분야의 사례가 아직 없습니다.
+    </p>
   </section>
 
   <!-- CTA -->
@@ -106,3 +177,31 @@ export const prerender = true;
     <a href="/contact" class="mt-6 inline-block btn btn-primary">상담 요청</a>
   </section>
 </BaseLayout>
+
+<script is:inline>
+  // 카테고리 필터 — JS가 없으면 전체가 그대로 보입니다.
+  const chips = document.querySelectorAll(".filter-chip");
+  const cards = document.querySelectorAll(".project-card");
+  const emptyState = document.getElementById("empty-state");
+
+  chips.forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const filter = chip.dataset.filter;
+
+      chips.forEach((other) => {
+        const active = other === chip;
+        other.classList.toggle("is-active", active);
+        other.setAttribute("aria-pressed", String(active));
+      });
+
+      let visible = 0;
+      cards.forEach((card) => {
+        const match = filter === "all" || card.dataset.category === filter;
+        card.hidden = !match;
+        if (match) visible += 1;
+      });
+
+      emptyState.classList.toggle("hidden", visible > 0);
+    });
+  });
+</script>

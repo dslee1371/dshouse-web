@@ -1,11 +1,17 @@
 ---
 title: "예원교회 주보·예배 PPT 자동 생성"
 order: 10
+detail: true
+category: "자동화"
 status: "운영"
 org: "예원교회"
 summary: "담당자별로 흩어져 있던 예배자료 입력을 한 화면에 모으고, 주보 PDF와 예배 PPT를 자동으로 만들어냅니다."
 before: "수작업 2시간"
 after: "입력 5분 + 자동 생성"
+highlights:
+  - "담당자별 입력 폼 + 실시간 검증 리포트"
+  - "주보 A4 PDF 자동 조판"
+  - "악보 800여 개에서 슬라이드 조립"
 stack:
   - Astro
   - OCI Object Storage

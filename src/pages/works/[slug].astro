@@ -5,17 +5,20 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 export const prerender = true;
 
 export async function getStaticPaths() {
-  const projects = await getCollection("automation");
-  return projects.map((project) => ({
-    params: { slug: project.slug },
-    props: { project },
-  }));
+  const entries = await getCollection("works");
+  // detail: true 인 사례만 상세 페이지를 만듭니다. 나머지는 목록 카드로만 노출됩니다.
+  return entries
+    .filter((entry) => entry.data.detail)
+    .map((entry) => ({
+      params: { slug: entry.slug },
+      props: { entry },
+    }));
 }
 
-type Props = { project: CollectionEntry<"automation"> };
-const { project } = Astro.props as Props;
-const { Content } = await project.render();
-const data = project.data;
+type Props = { entry: CollectionEntry<"works"> };
+const { entry } = Astro.props as Props;
+const { Content } = await entry.render();
+const data = entry.data;
 
 const whereLabel: Record<string, string> = {
   web: "웹",
@@ -37,9 +40,9 @@ const whereStyle: Record<string, string> = {
                 bg-[radial-gradient(circle_at_center,_rgba(71,163,255,0.25),_transparent_60%)]"></div>
 
     <nav class="text-sm text-gray-500 dark:text-gray-400">
-      <a href="/automation" class="hover:underline">자동화 프로젝트</a>
+      <a href="/works" class="hover:underline">Works</a>
       <span aria-hidden="true" class="mx-2">/</span>
-      <span>{data.org ?? data.title}</span>
+      <span>{data.category}</span>
     </nav>
 
     <h1 class="rise mt-4 text-3xl md:text-5xl font-extrabold leading-tight">
@@ -51,6 +54,7 @@ const whereStyle: Record<string, string> = {
 
     <div class="rise mt-6 flex flex-wrap items-center gap-3 text-sm" style="--rise-delay:220ms">
       <span class="rounded-full border px-3 py-1">{data.status}</span>
+      {data.org && <span class="rounded-full border px-3 py-1">{data.org}</span>}
       {
         (data.before || data.after) && (
           <span class="rounded-full border px-3 py-1">
@@ -62,7 +66,12 @@ const whereStyle: Record<string, string> = {
       }
       {
         data.tool && (
-          <a href={data.tool.href} class="btn btn-primary text-xs px-4 py-2">
+          <a
+            href={data.tool.href}
+            target={data.tool.external ? "_blank" : undefined}
+            rel={data.tool.external ? "noopener noreferrer" : undefined}
+            class="btn btn-primary text-xs px-4 py-2"
+          >
             {data.tool.label}
             {data.tool.gated && <span class="ml-1">🔒</span>}
           </a>
@@ -105,7 +114,7 @@ const whereStyle: Record<string, string> = {
                     </div>
                   </div>
                   {index < data.pipeline.length - 1 && (
-                    <div aria-hidden="true" class="ml-3 h-4 w-px bg-black/10 dark:bg-white/15"></div>
+                    <div aria-hidden="true" class="ml-3 h-4 w-px bg-black/10 dark:bg-white/15" />
                   )}
                 </li>
               ))}
@@ -130,7 +139,7 @@ const whereStyle: Record<string, string> = {
       <div class="card rounded-2xl" data-reveal data-reveal-delay="3">
         <h2 class="text-sm font-semibold">비슷한 작업이 필요하신가요?</h2>
         <p class="mt-2 text-xs text-gray-600 dark:text-gray-300">
-          반복되는 문서·운영 업무를 어디까지 줄일 수 있는지 함께 살펴봅니다.
+          어디까지 줄일 수 있는지 함께 살펴봅니다.
         </p>
         <a href="/contact" class="mt-4 inline-block btn btn-primary text-xs px-4 py-2">문의하기</a>
       </div>
@@ -138,6 +147,6 @@ const whereStyle: Record<string, string> = {
   </div>
 
   <div class="mt-16">
-    <a href="/automation" class="text-sm hover:underline">← 자동화 프로젝트 목록</a>
+    <a href="/works" class="text-sm hover:underline">← Works 목록</a>
   </div>
 </BaseLayout>
