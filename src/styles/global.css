@@ -22,9 +22,18 @@ a { @apply outline-none; }
   -webkit-background-clip: text; background-clip: text;
   color: transparent;
 }
+/* ---- Buttons ----
+   크기는 두 가지만 씁니다. 페이지마다 px/py를 따로 덮어쓰지 마세요.
+
+   .btn            기본 — 페이지 단위 CTA (히어로, 섹션 끝 상담 요청)
+   .btn + .btn-sm  작게 — 카드·사이드바·툴바 안
+   .btn-block      가로를 꽉 채움 (나란한 카드들의 CTA 폭을 맞출 때)
+*/
 .btn {
   @apply inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm border transition-transform;
 }
+.btn-sm { @apply px-4 py-2.5 text-xs rounded-lg; }
+.btn-block { @apply flex w-full; }
 .btn-primary {
   border: 0;
   background: linear-gradient(135deg, var(--color-accent), var(--color-neon));
@@ -32,16 +41,36 @@ a { @apply outline-none; }
   box-shadow: 0 10px 30px rgba(71,163,255,0.35);
 }
 .btn-primary:hover { transform: translateY(-1px) scale(1.01); }
+/* 외곽선만으로 버튼임을 알려야 하므로 테두리 대비를 3:1 이상으로 잡습니다.
+   예전 border-white/30은 흰 카드 위에서 배경과 같아 보이지 않았습니다. */
 .btn-ghost {
-  @apply border border-white/30 dark:border-white/20;
-  background: linear-gradient(135deg, rgba(255,255,255,0.5), rgba(255,255,255,0.15));
+  @apply border;
+  border-color: rgba(0, 0, 0, 0.42);
+  background: rgba(255, 255, 255, 0.6);
   backdrop-filter: blur(8px);
+}
+.btn-ghost:hover {
+  border-color: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.9);
+}
+.dark .btn-ghost {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+.dark .btn-ghost:hover {
+  border-color: rgba(255, 255, 255, 0.65);
+  background: rgba(255, 255, 255, 0.12);
 }
 
 /* ---- Cards / Glass ----
    호버 반응은 위계를 나눕니다.
-   .card          : 정적 카드 — 테두리만 또렷해짐(클릭 가능하다는 신호를 주지 않음)
-   .card-linked   : 링크/버튼을 감싼 카드 — 들어올림 + 테두리 강조
+
+   .card         : 기본. 테두리만 또렷해집니다. 카드 안에 링크가 따로 있는 경우 이걸 씁니다.
+   .card-linked  : 카드 요소 자체가 <a>일 때만 붙입니다. 들어올림 + 그림자.
+
+   ⚠️ 카드 전체가 링크가 아닌데 .card-linked를 붙이면
+      "누를 수 있다"고 신호를 주고선 클릭이 안 되는 상태가 됩니다.
+      그런 카드는 .card만 쓰고, 실제 목적지인 CTA를 버튼으로 도드라지게 하세요.
 */
 .card {
   @apply border rounded-[--radius-card] p-6;

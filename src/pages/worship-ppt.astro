@@ -5,7 +5,7 @@ export const prerender = true;
 
 const APP_URL = "https://worshipppt.dsdshouse.com";
 
-// 생성기가 만들어 주는 슬라이드 종류
+// Design에서 만들 수 있는 슬라이드 종류
 const slideKinds = [
   {
     title: "예배 순서",
@@ -28,7 +28,7 @@ const slideKinds = [
 
 <BaseLayout
   title="예배 PPT | 이동수하우스"
-  description="예배 슬라이드를 만드는 두 가지 방법 — 바로 쓰는 생성기와 교회에 맞춘 자동화 구축."
+  description="예배 슬라이드를 만드는 두 가지 방법 — 직접 디자인하는 Design과 자료에서 통째로 만들어내는 자동 생성 툴."
 >
   <!-- HERO -->
   <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
@@ -44,7 +44,7 @@ const slideKinds = [
     </h1>
     <p class="rise mt-4 max-w-2xl text-gray-600 dark:text-gray-300" style="--rise-delay:110ms">
       매주 반복되는 예배 슬라이드 작업을 줄이는 두 가지 방법입니다.
-      바로 써볼 수 있는 생성기와, 교회 사정에 맞춰 만드는 자동화입니다.
+      직접 만들어 보는 Design과, 예배자료에서 통째로 만들어내는 자동 생성 툴입니다.
     </p>
   </section>
 
@@ -52,43 +52,43 @@ const slideKinds = [
   <section data-reveal class="mt-12">
     <h2 class="text-2xl font-bold">두 가지 방법</h2>
     <p class="mt-2 text-gray-600 dark:text-gray-300">
-      가진 자료와 상황에 따라 맞는 쪽이 다릅니다.
+      하나는 지금 바로 써보는 공개 도구, 하나는 교회에 맞춰 만들어 드리는 구축입니다.
     </p>
 
     <div class="mt-6 grid gap-6 md:grid-cols-2">
-      <!-- 1) 생성기 -->
+      {/* 1) Design — 직접 만들어 보는 쪽 */}
       <article
         class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
         data-reveal
         data-reveal-delay="1"
       >
-        <div class="card card-linked rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
+        <div class="card rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
           <header class="flex items-start justify-between gap-3">
-            <h3 class="text-lg font-semibold">예배 PPT 생성기</h3>
+            <h3 class="text-lg font-semibold">예배 PPT Design</h3>
             <span class="shrink-0 rounded-full border border-emerald-500/40 px-2 py-1 text-xs text-emerald-600 dark:text-emerald-400">
               바로 사용
             </span>
           </header>
           <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-            가사와 본문을 입력하면 슬라이드를 만들어 줍니다.
+            가사와 본문을 넣으면 정돈된 디자인의 슬라이드가 나옵니다.
             악보 파일이 없어도 되고, 어느 교회에서나 쓸 수 있습니다.
           </p>
           <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
             <li>· 예배 순서 · 찬양 가사 · 성경 본문 · 설교 슬라이드</li>
+            <li>· 디자인 템플릿에 맞춰 자동 배치</li>
             <li>· Google Slides 또는 PPTX로 내보내기</li>
-            <li>· 설치 없이 브라우저에서</li>
           </ul>
-          <div class="mt-6 pt-4 border-t border-black/5 dark:border-white/10">
+          <div class="mt-auto pt-6">
             <a
               href={APP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              class="text-sm font-medium hover:underline"
+              class="btn btn-primary btn-sm btn-block"
             >
-              생성기 열기
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              Design 열어보기
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-                   class="inline-block ml-1 -mt-0.5" aria-hidden="true">
+                   class="ml-2" aria-hidden="true">
                 <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
                 <path d="M15 3h6v6M10 14L21 3" />
               </svg>
@@ -98,21 +98,19 @@ const slideKinds = [
         </div>
       </article>
 
-      <!-- 2) 자동화 구축 -->
+      {/* 2) 자동 생성 툴 — 자료에서 통째로 만들어내는 쪽 */}
       <article
         class="p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
         data-reveal
         data-reveal-delay="2"
       >
-        <div class="card card-linked rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
+        <div class="card rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
           <header class="flex items-start justify-between gap-3">
-            <h3 class="text-lg font-semibold">
-              <a href="/works/church-bulletin" class="hover:underline">예배자료 자동화 구축</a>
-            </h3>
-            <span class="shrink-0 rounded-full border px-2 py-1 text-xs">맞춤 구축</span>
+            <h3 class="text-lg font-semibold">예배 PPT 자동 생성 툴</h3>
+            <span class="shrink-0 rounded-full border px-2 py-1 text-xs">교회별 구축</span>
           </header>
           <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
-            담당자별 입력을 한 화면에 모으고, 주보와 예배 PPT를 함께 만듭니다.
+            예배자료를 한 번 입력하면 주보와 예배 PPT가 통째로 나옵니다.
             이미 가진 악보 자산과 예배 형식을 그대로 씁니다.
           </p>
           <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
@@ -120,12 +118,16 @@ const slideKinds = [
             <li>· 주보 PDF 자동 조판</li>
             <li>· 보유한 악보로 슬라이드 조립</li>
           </ul>
-          <div class="mt-6 pt-4 border-t border-black/5 dark:border-white/10 flex flex-wrap gap-4">
-            <a href="/works/church-bulletin" class="text-sm font-medium hover:underline">
-              예원교회 사례 보기 →
-            </a>
-            <a href="/contact" class="text-sm text-gray-500 dark:text-gray-400 hover:underline">
-              구축 문의
+
+          {/* 기대-실제 간극 방지: 바로 쓰는 공개 도구가 아님을 미리 알립니다 */}
+          <p class="mt-4 rounded-lg border border-black/10 dark:border-white/15 bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+            교회마다 예배 형식과 자료가 달라 <strong class="font-medium">개별 구축</strong>으로 진행합니다.
+            바로 가입해서 쓰는 공개 도구는 아닙니다.
+          </p>
+
+          <div class="mt-auto pt-6">
+            <a href="/works/church-bulletin" class="btn btn-ghost btn-sm btn-block">
+              예원교회 사례 보기
             </a>
           </div>
         </div>
@@ -133,13 +135,13 @@ const slideKinds = [
     </div>
 
     <p class="mt-6 text-sm text-gray-500 dark:text-gray-400">
-      먼저 생성기를 써보고, 손이 더 가는 부분이 보이면 그때 자동화를 붙이는 순서를 권합니다.
+      먼저 Design으로 만들어 보고, 매주 반복되는 부분이 보이면 그때 자동 생성으로 넘어가는 순서를 권합니다.
     </p>
   </section>
 
-  <!-- 생성기 상세 -->
+  {/* Design 상세 */}
   <section data-reveal class="mt-16">
-    <h2 class="text-2xl font-bold">생성기가 만들어 주는 슬라이드</h2>
+    <h2 class="text-2xl font-bold">Design에서 만들 수 있는 슬라이드</h2>
     <div class="mt-6 grid gap-6 md:grid-cols-2">
       {
         slideKinds.map((kind, index) => (
@@ -182,7 +184,7 @@ const slideKinds = [
     </p>
     <div class="mt-6 flex flex-wrap items-center justify-center gap-3">
       <a href={APP_URL} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-        생성기 열기
+        Design 열어보기
       </a>
       <a href="/contact" class="btn btn-ghost">구축 상담</a>
     </div>

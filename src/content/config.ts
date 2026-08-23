@@ -31,6 +31,19 @@ const works = defineCollection({
     /** 카드에 표시할 요약 불릿 */
     highlights: z.array(z.string()).default([]),
     stack: z.array(z.string()).default([]),
+    /**
+     * 실제 결과물 이미지. 상세 페이지 상단에 갤러리로 렌더됩니다.
+     * ⚠️ 실명·연락처 등 개인정보가 담긴 화면은 가리고 올리세요.
+     */
+    gallery: z
+      .array(
+        z.object({
+          src: z.string(),
+          alt: z.string(),
+          caption: z.string().optional(),
+        }),
+      )
+      .default([]),
     /** 파이프라인 단계 — 상세 페이지 사이드바에 렌더 */
     pipeline: z
       .array(
