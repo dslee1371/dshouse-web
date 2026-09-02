@@ -27,8 +27,8 @@ const slideKinds = [
 ---
 
 <BaseLayout
-  title="예배 PPT | 이동수하우스"
-  description="예배 슬라이드를 만드는 두 가지 방법 — 직접 디자인하는 Design과 자료에서 통째로 만들어내는 자동 생성 툴."
+  title="교회솔루션 | 이동수하우스"
+  description="교회의 반복 업무를 줄이는 도구들 — 예배 PPT 만들기와 교회 데이터 서비스."
 >
   <!-- HERO -->
   <section class="relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/10 p-10">
@@ -40,17 +40,17 @@ const slideKinds = [
                 bg-[radial-gradient(circle_at_center,_rgba(110,231,255,0.25),_transparent_60%)]"></div>
 
     <h1 class="rise text-3xl md:text-5xl font-extrabold leading-tight">
-      <span class="gradient-text">예배 PPT</span>
+      <span class="gradient-text">교회솔루션</span>
     </h1>
     <p class="rise mt-4 max-w-2xl text-gray-600 dark:text-gray-300" style="--rise-delay:110ms">
-      매주 반복되는 예배 슬라이드 작업을 줄이는 두 가지 방법입니다.
-      직접 만들어 보는 Design과, 예배자료에서 통째로 만들어내는 자동 생성 툴입니다.
+      교회에서 매주·매달 반복되는 일을 줄이는 도구들입니다.
+      예배 슬라이드를 만드는 두 가지 방법과, 교회 데이터를 다루는 프로젝트를 함께 소개합니다.
     </p>
   </section>
 
   <!-- 두 갈래 -->
   <section data-reveal class="mt-12">
-    <h2 class="text-2xl font-bold">두 가지 방법</h2>
+    <h2 class="text-2xl font-bold">예배 PPT 만들기 — 두 가지 방법</h2>
     <p class="mt-2 text-gray-600 dark:text-gray-300">
       하나는 지금 바로 써보는 공개 도구, 하나는 교회에 맞춰 만들어 드리는 구축입니다.
     </p>
@@ -173,6 +173,61 @@ const slideKinds = [
         </p>
       </div>
     </div>
+  </section>
+
+  {/* 예배 PPT 외의 교회 프로젝트 */}
+  <section data-reveal class="mt-16">
+    <h2 class="text-2xl font-bold">교회 데이터 프로젝트</h2>
+    <p class="mt-2 text-gray-600 dark:text-gray-300">
+      예배 준비 밖의 영역도 다룹니다. 지금 진행 중인 프로젝트입니다.
+    </p>
+
+    <article
+      class="mt-6 p-[1px] rounded-2xl bg-gradient-to-br from-[rgba(71,163,255,0.6)] to-[rgba(110,231,255,0.4)]"
+      data-reveal
+      data-reveal-delay="1"
+    >
+      <div class="card rounded-2xl bg-white/80 dark:bg-white/5 h-full flex flex-col">
+        <header class="flex items-start justify-between gap-3">
+          <h3 class="text-lg font-semibold">GAPCK 1만 교회 지도 데이터서비스</h3>
+          <span class="shrink-0 rounded-full border border-amber-500/40 px-2 py-1 text-xs text-amber-600 dark:text-amber-400">
+            기획 · 검토 중
+          </span>
+        </header>
+        <p class="mt-3 text-sm text-gray-600 dark:text-gray-300">
+          대한예수교장로회(합동) 소속 1만여 교회의 데이터를 지도 위에 올리는 일입니다.
+          지금은 어떤 서비스로 만들 수 있을지, 기술적으로 가능한지를 함께 따져보는 단계입니다.
+        </p>
+        <ul class="mt-4 space-y-2 text-sm text-gray-600 dark:text-gray-300">
+          <li>· 1만여 교회 데이터 매핑</li>
+          <li>· 서비스 기획 방향 검토</li>
+          <li>· 기술 타당성 검토</li>
+        </ul>
+
+        <p class="mt-4 rounded-lg border border-black/10 dark:border-white/15 bg-black/[0.03] dark:bg-white/[0.04] px-3 py-2 text-xs leading-relaxed text-gray-600 dark:text-gray-400">
+          아직 완성된 서비스가 아니라 <strong class="font-medium">검토용 플랫폼</strong>입니다.
+          결과에 따라 서비스로 이어질 수도, 검토로 끝날 수도 있습니다.
+        </p>
+
+        <div class="mt-auto pt-6">
+          <a
+            href="https://church-map.dsdshouse.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-ghost btn-sm btn-block"
+          >
+            검토 플랫폼 보기
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                 stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                 class="ml-2" aria-hidden="true">
+              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+              <path d="M15 3h6v6M10 14L21 3" />
+            </svg>
+            <span class="sr-only">(새 창에서 열림)</span>
+          </a>
+        </div>
+      </div>
+    </article>
   </section>
 
   <!-- CTA -->

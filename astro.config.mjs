@@ -13,6 +13,8 @@ export default defineConfig({
   redirects: {
     '/automation': '/works',
     '/automation/church-bulletin': '/works/church-bulletin',
+    // 예배 PPT 페이지를 교회솔루션으로 넓히면서 경로 변경
+    '/worship-ppt': '/church',
   },
   integrations: [
     sitemap({

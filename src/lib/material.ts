@@ -31,10 +31,14 @@ export const FIELDS = [
 export type FieldName = (typeof FIELDS)[number];
 export type MaterialData = Record<FieldName, string>;
 
+/**
+ * PPT 디자인(worship_design.py, 2026-08-23 수정본 기준)과 동일한 값.
+ * 연회색 배경(#ECF0F5)에서 읽히는 색이어야 한다 — 밝은 노랑(#ffd966) 계열은 대비 1.7:1로 안 보임.
+ */
 export const OPTION_DEFAULTS = {
-  fontSize: "40",
-  oddColor: "#000000",
-  evenColor: "#ffd966",
+  fontSize: "44",
+  oddColor: "#0F172A",
+  evenColor: "#C2410C",
 };
 
 export const EMPTY: MaterialData = {
@@ -94,6 +98,15 @@ export function fileNameFor(serviceDate: string): string {
   return `자료 - ${dateStamp(serviceDate)}.txt`;
 }
 
+/** 자동화(PPT 생성)가 읽는 구조화 파일. txt와 항상 쌍으로 저장한다. */
+export function jsonFileNameFor(serviceDate: string): string {
+  return `자료 - ${dateStamp(serviceDate)}.json`;
+}
+
+export function isJsonMaterial(name: string): boolean {
+  return /\.json$/i.test(name);
+}
+
 export function dateFromFileName(name: string): string | null {
   const stamp = name.match(/20\d{6}/)?.[0];
   if (!stamp) return null;
@@ -123,6 +136,7 @@ function optionLine(fontSize: string, oddColor: string, evenColor: string): stri
 
 function numberedBlock(text: string): string {
   return lines(text)
+    .map((line) => line.replace(/^(\d+\.\s*)+/, "")) // 이미 번호가 있으면 떼고 다시 매김 ("1. 1. …" 방지)
     .map((line, index) => `${index + 1}. ${line}`)
     .join("\n");
 }
@@ -185,7 +199,7 @@ function sectionMap(text: string): Record<string, string> {
 
 function stripNumbering(text: string): string {
   return lines(text)
-    .map((line) => line.replace(/^\d+\.\s*/, ""))
+    .map((line) => line.replace(/^(\d+\.\s*)+/, ""))
     .join("\n");
 }
 

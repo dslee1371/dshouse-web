@@ -136,15 +136,15 @@ export const prerender = true;
               <div class="md:col-span-2 grid grid-cols-3 gap-3">
                 <div>
                   <label for="rrFontSize" class="block text-xs text-gray-500 mb-1">교독문 글자크기</label>
-                  <input id="rrFontSize" type="number" min="20" max="72" step="1" value="40" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="rrFontSize" type="number" min="20" max="72" step="1" value="44" class="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label for="rrOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
-                  <input id="rrOddColor" type="color" value="#000000" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                  <input id="rrOddColor" type="color" value="#0F172A" class="w-full h-[38px] border rounded-lg px-1 py-1" />
                 </div>
                 <div>
                   <label for="rrEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
-                  <input id="rrEvenColor" type="color" value="#ffd966" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                  <input id="rrEvenColor" type="color" value="#C2410C" class="w-full h-[38px] border rounded-lg px-1 py-1" />
                 </div>
               </div>
             </div>
@@ -164,15 +164,15 @@ export const prerender = true;
               <div class="md:col-span-2 grid grid-cols-3 gap-3">
                 <div>
                   <label for="scriptureFontSize" class="block text-xs text-gray-500 mb-1">본문 글자크기</label>
-                  <input id="scriptureFontSize" type="number" min="20" max="72" step="1" value="40" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="scriptureFontSize" type="number" min="20" max="72" step="1" value="44" class="w-full border rounded-lg px-3 py-2 text-sm" />
                 </div>
                 <div>
                   <label for="scriptureOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
-                  <input id="scriptureOddColor" type="color" value="#000000" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                  <input id="scriptureOddColor" type="color" value="#0F172A" class="w-full h-[38px] border rounded-lg px-1 py-1" />
                 </div>
                 <div>
                   <label for="scriptureEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
-                  <input id="scriptureEvenColor" type="color" value="#ffd966" class="w-full h-[38px] border rounded-lg px-1 py-1" />
+                  <input id="scriptureEvenColor" type="color" value="#C2410C" class="w-full h-[38px] border rounded-lg px-1 py-1" />
                 </div>
               </div>
             </div>
@@ -207,6 +207,8 @@ export const prerender = true;
     validate,
     dateStamp,
     fileNameFor,
+    jsonFileNameFor,
+    isJsonMaterial,
     dateFromFileName,
     type MaterialData,
   } from "../../../lib/material";
@@ -308,7 +310,10 @@ export const prerender = true;
   async function loadBucketList() {
     savedList.innerHTML = '<li class="text-gray-500">불러오는 중…</li>';
     const res = await authedFetch("/api/bucket-list");
-    const items = await res.json();
+    // .json 쌍둥이 파일은 자동화용이라 목록에서 숨긴다 (불러올 때 알아서 우선 사용)
+    const items = ((await res.json()) as { name: string; savedAt?: string }[]).filter(
+      (item) => !isJsonMaterial(item.name),
+    );
     if (!items.length) {
       savedList.innerHTML = '<li class="text-gray-500">저장된 자료가 없습니다.</li>';
       return items;
@@ -340,6 +345,26 @@ export const prerender = true;
 
   async function loadFromBucket(name: string) {
     saveStatus.textContent = "불러오는 중…";
+    const date = dateFromFileName(name);
+
+    // 1) .json 쌍둥이가 있으면 그대로 복원 (정규식 파싱 없이 정확)
+    if (date) {
+      const jsonRes = await authedFetch(
+        `/api/bucket-file?name=${encodeURIComponent(jsonFileNameFor(date))}`,
+      ).catch(() => null);
+      if (jsonRes?.ok) {
+        try {
+          const data = (await jsonRes.json()) as Partial<MaterialData>;
+          applyData({ ...EMPTY, ...data, serviceDate: date });
+          saveStatus.textContent = `"${name}" 불러옴 (json)`;
+          return;
+        } catch {
+          /* json이 깨졌으면 txt로 폴백 */
+        }
+      }
+    }
+
+    // 2) txt만 있는 예전 자료
     const res = await authedFetch(`/api/bucket-file?name=${encodeURIComponent(name)}`);
     if (!res.ok) {
       saveStatus.textContent = "불러오기 실패";
@@ -347,7 +372,6 @@ export const prerender = true;
     }
     const text = await res.text();
     const parsed = parseMaterialText(text, formData());
-    const date = dateFromFileName(name);
     if (date) parsed.serviceDate = date;
     applyData(parsed);
     saveStatus.textContent = `"${name}" 불러옴`;
@@ -360,7 +384,10 @@ export const prerender = true;
       return;
     }
     const name = fileNameFor(data.serviceDate);
+    const jsonName = jsonFileNameFor(data.serviceDate);
     saveStatus.textContent = "저장 중…";
+
+    // txt: 사람이 읽고 주보 인쇄에 사용
     const res = await authedFetch("/api/bucket-file", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -370,7 +397,20 @@ export const prerender = true;
       saveStatus.textContent = "저장 실패";
       return;
     }
-    saveStatus.textContent = `"${name}" 저장됨`;
+
+    // json: PPT 자동화가 읽는 원본 구조 (파싱 오류 원천 차단)
+    const jsonRes = await authedFetch("/api/bucket-file", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: jsonName, content: JSON.stringify(data, null, 2) }),
+    });
+    if (!jsonRes.ok) {
+      saveStatus.textContent = `"${name}" 저장됨 · json 저장 실패`;
+      loadBucketList();
+      return;
+    }
+
+    saveStatus.textContent = `"${name}" + json 저장됨`;
     loadBucketList();
   }
 
