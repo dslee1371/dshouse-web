@@ -35,7 +35,7 @@ export const prerender = true;
 
     <div id="app-wrap" class="hidden grid gap-6 lg:grid-cols-[260px_minmax(0,1fr)]">
       <!-- 왼쪽: 상태 / 파일명 / 저장된 자료 -->
-      <aside class="space-y-6">
+      <aside class="space-y-6 order-2 lg:order-1">
         <div class="card rounded-2xl">
           <h2 class="text-sm font-semibold">제출 상태</h2>
           <div id="statusList" class="mt-3 space-y-2 text-sm"></div>
@@ -58,18 +58,40 @@ export const prerender = true;
       </aside>
 
       <!-- 가운데: 입력 폼 -->
-      <main>
+      <main class="order-1 lg:order-2 min-w-0">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h2 class="text-lg font-semibold">이번 주 예배자료</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-300">입력 → 저장 → 주보 생성 순서로 진행합니다.</p>
+            <h2 class="text-lg font-semibold flex items-center gap-2">
+              <span id="editTitle">이번 주 예배자료</span>
+              <span id="dirtyBadge" class="hidden text-xs font-normal rounded-full bg-amber-100 text-amber-700 px-2 py-0.5 dark:bg-amber-400/20 dark:text-amber-300">수정됨 · 저장 안 함</span>
+            </h2>
+            <p class="text-sm text-gray-600 dark:text-gray-300">입력 → 저장 → 주보 인쇄 / PPT 요청 순서로 진행합니다.</p>
           </div>
           <div class="flex flex-wrap gap-2">
-            <button id="bulletinBtn" type="button" class="btn btn-ghost btn-sm">주보 만들기</button>
+            <button id="nextWeekBtn" type="button" class="btn btn-ghost btn-sm" title="지난주 자료에서 매주 같은 항목만 남기고 다음 주일 날짜로 새로 시작">다음 주 만들기</button>
+            <button id="bulletinBtn" type="button" class="btn btn-ghost btn-sm">주보 인쇄</button>
             <button id="saveBtn" type="button" class="btn btn-primary btn-sm">저장하기</button>
           </div>
         </div>
-        <p id="saveStatus" class="mt-2 text-sm text-gray-500"></p>
+        <p id="saveStatus" class="mt-2 text-sm text-gray-500" aria-live="polite"></p>
+
+        <!-- 저장 안 한 임시본 복구 -->
+        <div id="draftBanner" class="hidden mt-3 rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm dark:bg-amber-400/10 dark:border-amber-400/40">
+          <span id="draftText">저장하지 않은 입력이 남아 있습니다.</span>
+          <button id="draftRestore" type="button" class="ml-2 underline font-medium">복구</button>
+          <button id="draftDiscard" type="button" class="ml-2 underline text-gray-500">버리기</button>
+        </div>
+
+        <!-- 저장 후 다음 단계 -->
+        <div id="afterSave" class="hidden mt-3 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-3 text-sm dark:bg-emerald-400/10 dark:border-emerald-400/40">
+          <div class="font-medium text-emerald-800 dark:text-emerald-200"><span id="afterSaveTitle">저장됨</span> — 다음 단계</div>
+          <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2">
+            <button id="afterPrint" type="button" class="underline">주보 인쇄 열기</button>
+            <button id="afterCopyApi" type="button" class="underline">자료 API 주소 복사</button>
+            <code id="afterApiUrl" class="text-xs text-gray-600 dark:text-gray-300"></code>
+          </div>
+          <p class="mt-2 text-gray-600 dark:text-gray-300">PPT는 Claude에게 <b>"이번 주 주일예배 ppt 만들어줘"</b>라고 요청하면 이 자료를 API로 읽어 만듭니다.</p>
+        </div>
 
         <form id="materialForm" class="mt-6 space-y-6">
           <section class="card rounded-2xl">
@@ -77,11 +99,11 @@ export const prerender = true;
             <div class="mt-3 grid gap-4 md:grid-cols-2">
               <div>
                 <label for="serviceDate" class="block text-xs text-gray-500 mb-1">예배 날짜</label>
-                <input id="serviceDate" type="date" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="serviceDate" type="date" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div>
                 <label for="serviceType" class="block text-xs text-gray-500 mb-1">예배 종류</label>
-                <select id="serviceType" class="w-full border rounded-lg px-3 py-2 text-sm">
+                <select id="serviceType" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20">
                   <option>주일오전예배</option>
                   <option>수요예배</option>
                   <option>금요기도회</option>
@@ -90,19 +112,19 @@ export const prerender = true;
               </div>
               <div>
                 <label for="leader" class="block text-xs text-gray-500 mb-1">인도자 (표지)</label>
-                <input id="leader" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="leader" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div>
                 <label for="offeringPrayer" class="block text-xs text-gray-500 mb-1">헌금기도</label>
-                <input id="offeringPrayer" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="offeringPrayer" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div>
                 <label for="prayer" class="block text-xs text-gray-500 mb-1">대표기도</label>
-                <input id="prayer" placeholder="예: 김순규 장로" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="prayer" placeholder="예: 김순규 장로" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div>
                 <label for="benediction" class="block text-xs text-gray-500 mb-1">축도</label>
-                <input id="benediction" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="benediction" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
             </div>
             <datalist id="pastorList"><option value="김삼열 목사"></option></datalist>
@@ -114,41 +136,40 @@ export const prerender = true;
               <div class="md:col-span-2 grid gap-2 md:grid-cols-2">
                 <div>
                   <label for="praise1" class="block text-xs text-gray-500 mb-1">찬양 1</label>
-                  <input id="praise1" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="praise1" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise1"></p>
                 </div>
                 <div>
                   <label for="praise2" class="block text-xs text-gray-500 mb-1">찬양 2</label>
-                  <input id="praise2" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="praise2" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise2"></p>
                 </div>
                 <div>
                   <label for="praise3" class="block text-xs text-gray-500 mb-1">찬양 3</label>
-                  <input id="praise3" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="praise3" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise3"></p>
                 </div>
                 <div>
                   <label for="praise4" class="block text-xs text-gray-500 mb-1">찬양 4</label>
-                  <input id="praise4" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                  <input id="praise4" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise4"></p>
                 </div>
-                <p class="md:col-span-2 text-xs text-gray-500">찬양PPT 폴더에 있는 악보 이름이 자동완성됩니다. 찬송가는 "270장" 처럼 장 번호로 적어도 됩니다.</p>
+                <p class="md:col-span-2 text-xs text-gray-500">찬양PPT 폴더에 있는 악보 이름이 자동완성됩니다. 찬송가는 "270장" 처럼 장 번호로 적으면 제목이 아래에 뜹니다.</p>
               </div>
               <div>
-                <label for="offeringHymn" class="block text-xs text-gray-500 mb-1">찬송-2 / 봉헌찬송</label>
-                <input id="offeringHymn" list="hymnList" autocomplete="off" placeholder="예: 43장 1절만" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <label for="offeringHymn" class="block text-xs text-gray-500 mb-1">봉헌찬송 (찬송-2)</label>
+                <input id="offeringHymn" list="hymnList" autocomplete="off" placeholder="예: 43장 1절만" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="offeringHymn"></p>
               </div>
               <div>
-                <label for="hymnThree" class="block text-xs text-gray-500 mb-1">찬송-3</label>
-                <input id="hymnThree" list="hymnList" autocomplete="off" placeholder="예: 315장" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <label for="hymnThree" class="block text-xs text-gray-500 mb-1">찬송-3 (교독문 뒤)</label>
+                <input id="hymnThree" list="hymnList" autocomplete="off" placeholder="예: 315장" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="hymnThree"></p>
               </div>
               <div>
-                <label for="hymnFour" class="block text-xs text-gray-500 mb-1">찬송-4</label>
-                <input id="hymnFour" list="hymnList" autocomplete="off" placeholder="예: 288장" class="w-full border rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div>
-                <label for="specialSong" class="block text-xs text-gray-500 mb-1">특송</label>
-                <select id="specialSong" class="w-full border rounded-lg px-3 py-2 text-sm">
-                  <option value="remove">특송 슬라이드 제거</option>
-                  <option value="keep">특송 있음</option>
-                  <option value="none">확인 필요</option>
-                </select>
+                <label for="hymnFour" class="block text-xs text-gray-500 mb-1">찬송-4 (설교 뒤)</label>
+                <input id="hymnFour" list="hymnList" autocomplete="off" placeholder="예: 288장" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
+                <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="hymnFour"></p>
               </div>
             </div>
             <datalist id="songList"></datalist>
@@ -160,7 +181,7 @@ export const prerender = true;
             <div class="mt-3 grid gap-4 md:grid-cols-2">
               <div>
                 <label for="rrSelect" class="block text-xs text-gray-500 mb-1">교독문</label>
-                <select id="rrSelect" class="w-full border rounded-lg px-3 py-2 text-sm">
+                <select id="rrSelect" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20">
                   <option value="">— 교독문 선택 —</option>
                 </select>
                 <input id="responsiveReading" type="hidden" />
@@ -168,12 +189,12 @@ export const prerender = true;
               </div>
               <div>
                 <label for="scripture" class="block text-xs text-gray-500 mb-1">성경본문</label>
-                <input id="scripture" placeholder="예: 고린도전서 13장 1-13절" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="scripture" placeholder="예: 고린도전서 13장 1-13절" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
                 <p class="mt-1 text-xs text-gray-500">"1절~13절", "14 ~ 33절" 어떻게 적어도 "1-13절"로 정리됩니다.</p>
               </div>
               <div class="md:col-span-2">
                 <label for="sermonTitle" class="block text-xs text-gray-500 mb-1">설교 제목</label>
-                <input id="sermonTitle" placeholder="예: 자유와 사랑" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="sermonTitle" placeholder="예: 자유와 사랑" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div class="md:col-span-2 rounded-lg border border-dashed px-4 py-3 text-xs text-gray-600 dark:text-gray-300 dark:border-white/20">
                 <b>교독문·말씀봉독 슬라이드 서식은 고정입니다.</b>
@@ -188,16 +209,25 @@ export const prerender = true;
           </section>
 
           <section class="card rounded-2xl">
-            <h3 class="font-semibold">광고</h3>
+            <h3 class="font-semibold">교회 소식 및 안내</h3>
             <div class="mt-3 grid gap-4">
               <div>
-                <label for="announcements" class="block text-xs text-gray-500 mb-1">광고 (한 줄에 하나씩)</label>
-                <textarea id="announcements" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
-                <p class="mt-1 text-xs text-gray-500">첫 줄 환영 문구 → 안내 사항 → 기도 대상(이름 — 내용) 순으로 적으면 슬라이드 섹션으로 나뉩니다.</p>
+                <label for="welcome" class="block text-xs text-gray-500 mb-1">환영 문구 (슬라이드 첫 줄)</label>
+                <input id="welcome" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
               </div>
               <div>
+                <label for="notices" class="block text-xs text-gray-500 mb-1">안내 사항 (한 줄에 하나씩)</label>
+                <textarea id="notices" rows="3" placeholder="예: 화요일 새벽기도 — 이재임 전도사 인도" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20"></textarea>
+              </div>
+              <div>
+                <label for="prayerRequests" class="block text-xs text-gray-500 mb-1">성도들을 위한 중보기도 (이름 — 내용, 한 줄에 하나씩)</label>
+                <textarea id="prayerRequests" rows="3" placeholder="예: 김복례 권사 — 무릎 치유" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20"></textarea>
+                <p class="mt-1 text-xs text-gray-500">이름과 내용 사이는 " — "(대시)로 구분합니다. 슬라이드에서 별도 섹션으로 나갑니다.</p>
+              </div>
+              <input id="announcements" type="hidden" />
+              <div>
                 <label for="notes" class="block text-xs text-gray-500 mb-1">추가 요청</label>
-                <textarea id="notes" rows="3" placeholder="PPT 수정 요청이나 방송실 전달사항" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                <textarea id="notes" rows="3" placeholder="PPT 수정 요청이나 방송실 전달사항" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20"></textarea>
               </div>
             </div>
           </section>
@@ -220,9 +250,13 @@ export const prerender = true;
     jsonFileNameFor,
     isJsonMaterial,
     dateFromFileName,
+    formatKoreanDate,
     formatResponsiveReading,
     normalizeScripture,
     applyDesignRule,
+    nextWeekFrom,
+    upcomingSunday,
+    hymnLookup,
     lines,
     type MaterialData,
   } from "../../../lib/material";
@@ -230,7 +264,8 @@ export const prerender = true;
   import songs from "../../../data/songs.json";
 
   const TOKEN_KEY = "dshouse_editor_token";
-  const DRAFT_KEY = "dshouse_bulletin_draft";
+  const DRAFT_KEY = "dshouse_bulletin_draft"; // 인쇄뷰로 넘기는 값 (sessionStorage)
+  const AUTOSAVE_KEY = "dshouse_bulletin_autosave"; // 저장 안 한 입력 (localStorage)
 
   const gate = document.getElementById("token-gate")!;
   const appWrap = document.getElementById("app-wrap")!;
@@ -239,8 +274,19 @@ export const prerender = true;
   const tokenError = document.getElementById("token-error")!;
   const saveStatus = document.getElementById("saveStatus")!;
   const savedList = document.getElementById("savedList")!;
+  const dirtyBadge = document.getElementById("dirtyBadge")!;
+  const editTitle = document.getElementById("editTitle")!;
+  const draftBanner = document.getElementById("draftBanner")!;
+  const afterSave = document.getElementById("afterSave")!;
+
+  const songData = songs as { hymns: { no: number; title: string }[]; ccm: string[] };
+  const ccmSet = new Set(songData.ccm.map((t) => t.trim()));
 
   let token = sessionStorage.getItem(TOKEN_KEY) || "";
+  let dirty = false;
+  let loadedName: string | null = null; // 지금 폼에 올라와 있는 버킷 파일명
+  let savedNames = new Set<string>(); // 버킷에 있는 txt 파일명
+  let autosaveTimer: number | undefined;
 
   function el(id: string) {
     return document.getElementById(id) as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement;
@@ -262,6 +308,7 @@ export const prerender = true;
     const rr = el("rrSelect")?.value ?? "";
     data.responsiveReading = rr ? formatResponsiveReading(rr) : data.responsiveReading;
     data.scripture = normalizeScripture(data.scripture);
+    data.announcements = ""; // 세 칸(welcome/notices/prayerRequests)에서 다시 합친다
     return applyDesignRule(data);
   }
 
@@ -301,21 +348,20 @@ export const prerender = true;
     }
     const songList = document.getElementById("songList");
     const hymnList = document.getElementById("hymnList");
-    const data = songs as { hymns: { no: number; title: string }[]; ccm: string[] };
     if (songList && !songList.children.length) {
-      data.hymns.forEach((h) => {
+      songData.hymns.forEach((h) => {
         const o = document.createElement("option");
         o.value = `${h.no}장 ${h.title}`;
         songList.appendChild(o);
       });
-      data.ccm.forEach((t) => {
+      songData.ccm.forEach((t) => {
         const o = document.createElement("option");
         o.value = t;
         songList.appendChild(o);
       });
     }
     if (hymnList && !hymnList.children.length) {
-      data.hymns.forEach((h) => {
+      songData.hymns.forEach((h) => {
         const o = document.createElement("option");
         o.value = `${h.no}장`;
         o.label = h.title;
@@ -324,12 +370,44 @@ export const prerender = true;
     }
   }
 
+  /** 찬송 번호 → 제목을 입력 아래에 보여준다. 번호가 목록에 없으면 빨간 경고. */
+  function renderHints() {
+    document.querySelectorAll<HTMLElement>("[data-hint-for]").forEach((hint) => {
+      const id = hint.dataset.hintFor!;
+      const value = (el(id)?.value ?? "").trim();
+      hint.className = "hint mt-1 text-xs min-h-[1rem] text-gray-500";
+      hint.textContent = "";
+      if (!value) return;
+      const hit = hymnLookup(value, songData.hymns);
+      if (hit) {
+        if (hit.title) {
+          hint.textContent = `♪ ${hit.no}장 ${hit.title}`;
+          hint.classList.add("text-emerald-700", "dark:text-emerald-300");
+        } else {
+          hint.textContent = `찬송가 ${hit.no}장은 목록에 없습니다. 번호를 확인하세요.`;
+          hint.classList.add("text-red-500");
+        }
+        return;
+      }
+      if (id.startsWith("praise")) {
+        if (ccmSet.has(value)) {
+          hint.textContent = "✓ 악보 있음";
+          hint.classList.add("text-emerald-700", "dark:text-emerald-300");
+        } else {
+          const near = songData.ccm.find((t) => t.includes(value) || value.includes(t));
+          hint.textContent = near ? `비슷한 악보: ${near}` : "악보 목록에 없는 이름입니다 (PPT 생성 시 확인 요청됨)";
+          hint.classList.add(near ? "text-amber-600" : "text-amber-600");
+        }
+      }
+    });
+  }
+
   function updateStatus(data: MaterialData) {
     const groups: [string, boolean][] = [
       ["찬양팀", Boolean(data.praiseMain && data.offeringHymn && data.hymnThree && data.hymnFour)],
       ["예배순서", Boolean(data.responsiveReading && data.prayer)],
       ["말씀/설교", Boolean(data.scripture && data.sermonTitle)],
-      ["광고", Boolean(data.announcements)],
+      ["소식/안내", Boolean(lines(data.notices).length || lines(data.prayerRequests).length)],
       ["검증", !validate(data).some(([level]) => level === "danger")],
     ];
     el("statusList").innerHTML = groups
@@ -344,6 +422,8 @@ export const prerender = true;
   function render() {
     const data = formData();
     el("fileName").textContent = fileNameFor(data.serviceDate);
+    const label = formatKoreanDate(data.serviceDate);
+    editTitle.textContent = label ? `${label} 예배자료` : "이번 주 예배자료";
     el("issues").innerHTML = validate(data)
       .map(([level, text]) => {
         const color =
@@ -352,11 +432,65 @@ export const prerender = true;
       })
       .join("");
     updateStatus(data);
+    renderHints();
+    highlightSaved();
   }
 
   function loadSample() {
     applyData(SAMPLE);
   }
+
+  // --- 미저장 상태 / 임시 저장 ---
+  function setDirty(value: boolean) {
+    dirty = value;
+    dirtyBadge.classList.toggle("hidden", !value);
+    if (!value) localStorage.removeItem(AUTOSAVE_KEY);
+  }
+
+  function onEdit() {
+    render();
+    afterSave.classList.add("hidden");
+    setDirty(true);
+    window.clearTimeout(autosaveTimer);
+    autosaveTimer = window.setTimeout(() => {
+      try {
+        localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({ at: Date.now(), data: formData() }));
+      } catch {
+        /* 저장 공간 부족 등은 무시 */
+      }
+    }, 500);
+  }
+
+  function offerAutosave() {
+    let saved: { at: number; data: MaterialData } | null = null;
+    try {
+      saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY) || "null");
+    } catch {
+      saved = null;
+    }
+    if (!saved?.data) return;
+    const when = new Date(saved.at).toLocaleString("ko-KR");
+    document.getElementById("draftText")!.textContent =
+      `저장하지 않은 입력이 남아 있습니다 (${when}, ${saved.data.serviceDate || "날짜 없음"}).`;
+    draftBanner.classList.remove("hidden");
+    document.getElementById("draftRestore")!.onclick = () => {
+      applyData(saved!.data);
+      loadedName = null;
+      setDirty(true);
+      draftBanner.classList.add("hidden");
+      saveStatus.textContent = "임시본을 복구했습니다. 저장하기 전까지는 버킷에 없습니다.";
+    };
+    document.getElementById("draftDiscard")!.onclick = () => {
+      localStorage.removeItem(AUTOSAVE_KEY);
+      draftBanner.classList.add("hidden");
+    };
+  }
+
+  window.addEventListener("beforeunload", (e) => {
+    if (!dirty) return;
+    e.preventDefault();
+    e.returnValue = "";
+  });
 
   // --- 버킷 연동 ---
   function showGate(message?: string) {
@@ -382,6 +516,15 @@ export const prerender = true;
     return res;
   }
 
+  function highlightSaved() {
+    savedList.querySelectorAll<HTMLButtonElement>("button[data-name]").forEach((btn) => {
+      const active = btn.dataset.name === loadedName;
+      btn.classList.toggle("border-emerald-500", active);
+      btn.classList.toggle("bg-emerald-50", active);
+      btn.classList.toggle("dark:bg-emerald-400/10", active);
+    });
+  }
+
   async function loadBucketList() {
     savedList.innerHTML = '<li class="text-gray-500">불러오는 중…</li>';
     const res = await authedFetch("/api/bucket-list");
@@ -389,6 +532,7 @@ export const prerender = true;
     const items = ((await res.json()) as { name: string; savedAt?: string }[]).filter(
       (item) => !isJsonMaterial(item.name),
     );
+    savedNames = new Set(items.map((i) => i.name));
     if (!items.length) {
       savedList.innerHTML = '<li class="text-gray-500">저장된 자료가 없습니다.</li>';
       return items;
@@ -398,15 +542,25 @@ export const prerender = true;
       const li = document.createElement("li");
       const btn = document.createElement("button");
       btn.type = "button";
+      btn.dataset.name = item.name;
       btn.className =
         "w-full text-left rounded-lg border px-3 py-2 text-xs hover:bg-black/5 dark:hover:bg-white/10 dark:border-white/20";
-      const savedAt = item.savedAt ? new Date(item.savedAt).toLocaleString("ko-KR") : "";
-      btn.innerHTML = `<div class="font-medium">${item.name}</div><div class="text-gray-500">${savedAt}</div>`;
-      btn.addEventListener("click", () => loadFromBucket(item.name));
+      const date = dateFromFileName(item.name);
+      const title = date ? formatKoreanDate(date) : item.name;
+      const savedAt = item.savedAt ? `저장 ${new Date(item.savedAt).toLocaleString("ko-KR")}` : "";
+      btn.innerHTML = `<div class="font-medium">${title}</div><div class="text-gray-500">${savedAt}</div>`;
+      btn.addEventListener("click", () => confirmDiscard() && loadFromBucket(item.name));
       li.appendChild(btn);
       savedList.appendChild(li);
     }
+    highlightSaved();
     return items;
+  }
+
+  /** 수정 중인 내용을 버려도 되는지 확인. */
+  function confirmDiscard(): boolean {
+    if (!dirty) return true;
+    return window.confirm("저장하지 않은 수정이 있습니다. 버리고 진행할까요?");
   }
 
   async function loadInitial() {
@@ -414,12 +568,15 @@ export const prerender = true;
     if (items.length) {
       await loadFromBucket(items[0].name);
     } else {
-      loadSample();
+      applyData({ ...EMPTY, serviceDate: upcomingSunday() });
+      loadedName = null;
     }
+    offerAutosave();
   }
 
   async function loadFromBucket(name: string) {
     saveStatus.textContent = "불러오는 중…";
+    afterSave.classList.add("hidden");
     const date = dateFromFileName(name);
 
     // 1) .json 쌍둥이가 있으면 그대로 복원 (정규식 파싱 없이 정확)
@@ -431,7 +588,10 @@ export const prerender = true;
         try {
           const data = (await jsonRes.json()) as Partial<MaterialData>;
           applyData({ ...EMPTY, ...data, serviceDate: date });
-          saveStatus.textContent = `"${name}" 불러옴 (json)`;
+          loadedName = name;
+          setDirty(false);
+          render();
+          saveStatus.textContent = `"${name}" 불러옴`;
           return;
         } catch {
           /* json이 깨졌으면 txt로 폴백 */
@@ -449,17 +609,34 @@ export const prerender = true;
     const parsed = parseMaterialText(text, formData());
     if (date) parsed.serviceDate = date;
     applyData(parsed);
-    saveStatus.textContent = `"${name}" 불러옴`;
+    loadedName = name;
+    setDirty(false);
+    render();
+    saveStatus.textContent = `"${name}" 불러옴 (예전 형식)`;
   }
 
   async function saveToBucket() {
     const data = formData();
     if (!dateStamp(data.serviceDate)) {
       saveStatus.textContent = "예배 날짜를 먼저 선택하세요.";
+      el("serviceDate").focus();
       return;
     }
     const name = fileNameFor(data.serviceDate);
     const jsonName = jsonFileNameFor(data.serviceDate);
+
+    // 다른 주 자료를 열어 놓고 날짜만 안 바꾼 채 저장하는 사고 방지
+    if (savedNames.has(name) && loadedName !== name) {
+      const ok = window.confirm(
+        `${formatKoreanDate(data.serviceDate)} 자료가 이미 저장돼 있습니다.\n덮어쓸까요?\n\n(다음 주 자료라면 "취소" 후 예배 날짜를 바꾸거나 "다음 주 만들기"를 쓰세요)`,
+      );
+      if (!ok) return;
+    }
+    if (validate(data).some(([level]) => level === "danger")) {
+      const ok = window.confirm("검증 리포트에 빨간 항목이 있습니다. 그래도 저장할까요?");
+      if (!ok) return;
+    }
+
     saveStatus.textContent = "저장 중…";
 
     // txt: 사람이 읽고 주보 인쇄에 사용
@@ -469,7 +646,7 @@ export const prerender = true;
       body: JSON.stringify({ name, content: buildMaterial(data) }),
     });
     if (!res.ok) {
-      saveStatus.textContent = "저장 실패";
+      saveStatus.textContent = "저장 실패 — 네트워크나 토큰을 확인하세요.";
       return;
     }
 
@@ -480,13 +657,44 @@ export const prerender = true;
       body: JSON.stringify({ name: jsonName, content: JSON.stringify(data, null, 2) }),
     });
     if (!jsonRes.ok) {
-      saveStatus.textContent = `"${name}" 저장됨 · json 저장 실패`;
-      loadBucketList();
-      return;
+      saveStatus.textContent = `"${name}" 저장됨 · json 저장 실패 (PPT 자동화는 txt로 읽습니다)`;
+    } else {
+      saveStatus.textContent = "";
     }
 
-    saveStatus.textContent = `"${name}" + json 저장됨`;
+    loadedName = name;
+    setDirty(false);
+    showAfterSave(data);
     loadBucketList();
+  }
+
+  function showAfterSave(data: MaterialData) {
+    const apiUrl = `${location.origin}/api/material/${data.serviceDate}`;
+    document.getElementById("afterSaveTitle")!.textContent =
+      `${formatKoreanDate(data.serviceDate)} 자료 저장됨`;
+    document.getElementById("afterApiUrl")!.textContent = apiUrl;
+    afterSave.classList.remove("hidden");
+    document.getElementById("afterPrint")!.onclick = openBulletin;
+    document.getElementById("afterCopyApi")!.onclick = async () => {
+      try {
+        await navigator.clipboard.writeText(apiUrl);
+        saveStatus.textContent = "API 주소를 복사했습니다.";
+      } catch {
+        saveStatus.textContent = apiUrl;
+      }
+    };
+  }
+
+  /** 지난주 자료 → 다음 주 빈 자료 (고정 항목만 유지) */
+  function startNextWeek() {
+    if (!confirmDiscard()) return;
+    const next = nextWeekFrom(formData());
+    applyData(next);
+    loadedName = null;
+    afterSave.classList.add("hidden");
+    setDirty(true);
+    saveStatus.textContent = `${formatKoreanDate(next.serviceDate)} 자료를 새로 시작했습니다. 인도자·헌금기도·축도·봉헌찬송·환영 문구만 유지됩니다.`;
+    el("praise1").focus();
   }
 
   /** 주보 인쇄뷰 열기 — 현재 입력값을 그대로 넘깁니다(저장 여부와 무관). */
@@ -507,18 +715,27 @@ export const prerender = true;
   fillLists();
   [...FIELDS, "praise1", "praise2", "praise3", "praise4", "rrSelect"].forEach((id) => {
     const node = el(id);
-    if (!node) return;
-    node.addEventListener("input", render);
-    node.addEventListener("change", render);
+    if (!node || node.type === "hidden") return;
+    node.addEventListener("input", onEdit);
+    node.addEventListener("change", onEdit);
   });
 
   document.getElementById("saveBtn")!.addEventListener("click", saveToBucket);
   document.getElementById("bulletinBtn")!.addEventListener("click", openBulletin);
+  document.getElementById("nextWeekBtn")!.addEventListener("click", startNextWeek);
   document.getElementById("refreshBtn")!.addEventListener("click", loadBucketList);
 
   el("serviceDate").addEventListener("click", (e) => {
     const target = e.target as HTMLInputElement & { showPicker?: () => void };
     if (typeof target.showPicker === "function") target.showPicker();
+  });
+
+  // Ctrl/Cmd+S → 저장
+  window.addEventListener("keydown", (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "s" && !appWrap.classList.contains("hidden")) {
+      e.preventDefault();
+      saveToBucket();
+    }
   });
 
   tokenSubmit.addEventListener("click", async () => {

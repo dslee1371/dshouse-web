@@ -15,13 +15,15 @@ export const FIELDS = [
   "offeringPrayer", // 헌금기도
   "hymnThree",
   "hymnFour",
-  "specialSong",
   "responsiveReading",
   "prayer",
   "scripture",
   "sermonTitle",
   "benediction", // 축도
-  "announcements",
+  "welcome", // 광고 슬라이드 환영 문구 (거의 고정)
+  "notices", // 안내 사항 (한 줄 하나)
+  "prayerRequests", // 중보기도 대상 ("이름 — 내용")
+  "announcements", // 위 셋을 합친 호환용 (예전 자료·load_material.py)
   "notes",
   "rrFontSize",
   "rrOddColor",
@@ -36,6 +38,9 @@ export type MaterialData = Record<FieldName, string>;
 
 /** 담임목사. 인도자·헌금기도·축도 기본값. */
 export const DEFAULT_PASTOR = "김삼열 목사";
+
+/** 교회 소식 슬라이드 첫 줄. 매주 같으므로 기본값으로 둔다. */
+export const DEFAULT_WELCOME = "주님의 이름으로 오신 모든 분들을 진심으로 환영합니다";
 
 /**
  * 색·글자크기는 PPT 디자인 규칙(worship_design.py, 2026-08-23 수정본 기준)이 정한다.
@@ -69,12 +74,14 @@ export const EMPTY: MaterialData = {
   offeringPrayer: DEFAULT_PASTOR,
   hymnThree: "",
   hymnFour: "",
-  specialSong: "remove",
   responsiveReading: "",
   prayer: "",
   scripture: "",
   sermonTitle: "",
   benediction: DEFAULT_PASTOR,
+  welcome: DEFAULT_WELCOME,
+  notices: "",
+  prayerRequests: "",
   announcements: "",
   notes: "",
   rrFontSize: DESIGN_RULE.fontSize,
@@ -98,10 +105,116 @@ export function applyDesignRule(data: MaterialData): MaterialData {
     leader: data.leader?.trim() || DEFAULT_PASTOR,
     offeringPrayer: data.offeringPrayer?.trim() || DEFAULT_PASTOR,
     benediction: data.benediction?.trim() || DEFAULT_PASTOR,
+    ...composeAnnouncements(data),
   };
 }
 
-export const SAMPLE: MaterialData = {
+/* ------------------------------------------------------------------ */
+/* 광고: welcome / notices / prayerRequests ↔ announcements(호환)        */
+/* ------------------------------------------------------------------ */
+
+const PRAYER_LINE = /\s[—–-]\s|^[^:：]{2,30}\s*[:：]\s*\S/; // "김복례 권사 — 무릎 치유" / "이산: 눈 수술"
+
+/**
+ * 예전 자료는 광고가 한 덩어리(announcements)였다.
+ * 첫 줄에 "환영"이 있으면 환영 문구, "이름 — 내용" 꼴은 중보기도, 나머지는 안내로 나눈다.
+ */
+export function splitLegacyAnnouncements(text: string): {
+  welcome: string;
+  notices: string;
+  prayerRequests: string;
+} {
+  const all = lines(text).map((l) => l.replace(/^(\d+\.\s*)+/, ""));
+  let welcome = "";
+  if (all.length && /환영/.test(all[0])) welcome = all.shift()!;
+  const prayer: string[] = [];
+  const notice: string[] = [];
+  all.forEach((l) => (PRAYER_LINE.test(l) ? prayer : notice).push(l));
+  return { welcome, notices: notice.join("\n"), prayerRequests: prayer.join("\n") };
+}
+
+/**
+ * 세 칸이 비어 있고 announcements만 있으면 나눠 채우고,
+ * 항상 announcements를 세 칸의 합으로 다시 만든다 (PPT 자동화가 읽는 호환 필드).
+ */
+function composeAnnouncements(data: MaterialData): Pick<
+  MaterialData,
+  "welcome" | "notices" | "prayerRequests" | "announcements"
+> {
+  let welcome = (data.welcome ?? "").trim();
+  let notices = lines(data.notices ?? "").join("\n");
+  let prayerRequests = lines(data.prayerRequests ?? "").join("\n");
+  // welcome은 EMPTY 기본값이 늘 들어 있으니 안내·중보기도만 보고 예전 형식인지 판단한다
+  if (!notices && !prayerRequests && (data.announcements ?? "").trim()) {
+    const split = splitLegacyAnnouncements(data.announcements);
+    welcome = split.welcome || welcome;
+    notices = split.notices;
+    prayerRequests = split.prayerRequests;
+  }
+  welcome ||= DEFAULT_WELCOME;
+  const announcements = [welcome, ...lines(notices), ...lines(prayerRequests)].join("\n");
+  return { welcome, notices, prayerRequests, announcements };
+}
+
+/* ------------------------------------------------------------------ */
+/* 날짜                                                                */
+/* ------------------------------------------------------------------ */
+
+function isoLocal(d: Date): string {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, "0");
+  const day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+
+export function isSunday(serviceDate: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(serviceDate ?? "")) return false;
+  const [y, m, d] = serviceDate.split("-").map(Number);
+  return new Date(y, m - 1, d).getDay() === 0;
+}
+
+/** after(YYYY-MM-DD, 없으면 오늘) 이후의 첫 주일. after가 주일이면 그 다음 주일. */
+export function nextSunday(after?: string): string {
+  let d: Date;
+  if (after && /^\d{4}-\d{2}-\d{2}$/.test(after)) {
+    const [y, m, day] = after.split("-").map(Number);
+    d = new Date(y, m - 1, day);
+    d.setDate(d.getDate() + 1);
+  } else {
+    d = new Date();
+    d.setHours(0, 0, 0, 0);
+  }
+  while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
+  return isoLocal(d);
+}
+
+/** 오늘 기준 이번 주일(오늘이 주일이면 오늘). 새 자료의 기본 날짜. */
+export function upcomingSunday(): string {
+  const d = new Date();
+  d.setHours(0, 0, 0, 0);
+  while (d.getDay() !== 0) d.setDate(d.getDate() + 1);
+  return isoLocal(d);
+}
+
+/**
+ * 지난주 자료에서 다음 주 자료를 만든다.
+ * 매주 같은 것(인도자·헌금기도·축도·봉헌찬송·환영 문구·예배 종류)만 남기고 나머지는 비운다.
+ */
+export function nextWeekFrom(prev: MaterialData): MaterialData {
+  const base = applyDesignRule({ ...EMPTY, ...prev });
+  return applyDesignRule({
+    ...EMPTY,
+    serviceDate: nextSunday(base.serviceDate || undefined),
+    serviceType: base.serviceType,
+    leader: base.leader,
+    offeringPrayer: base.offeringPrayer,
+    benediction: base.benediction,
+    offeringHymn: base.offeringHymn || EMPTY.offeringHymn,
+    welcome: base.welcome,
+  });
+}
+
+export const SAMPLE: MaterialData = applyDesignRule({
   ...EMPTY,
   serviceDate: "2026-07-26",
   serviceType: "주일오전예배",
@@ -109,13 +222,13 @@ export const SAMPLE: MaterialData = {
   offeringHymn: "43장 1절만",
   hymnThree: "315장",
   hymnFour: "288장",
-  specialSong: "remove",
   responsiveReading: "교독문 64. 시편 148편",
   prayer: "김순규 장로",
   scripture: "고린도전서 8장 1-13절",
   sermonTitle: "자유와 사랑",
-  announcements: "예배 후 여전도회 월례회가 본당에서 있습니다.\n7.21-24일 김삼열 목사 휴가",
-};
+  notices: "예배 후 여전도회 월례회가 본당에서 있습니다.\n7.21-24일 김삼열 목사 휴가",
+  prayerRequests: "김복례 권사 — 무릎 치유",
+});
 
 /* ------------------------------------------------------------------ */
 /* 문자열 유틸                                                          */
@@ -194,17 +307,13 @@ export function buildMaterial(raw: MaterialData): string {
   chunks.push(data.hymnThree);
   chunks.push("\n### 기도");
   chunks.push(data.prayer);
-  if (data.specialSong === "remove") {
-    chunks.push("\n### 특송 슬라이드 제거");
-  } else if (data.specialSong === "keep") {
-    chunks.push("\n### 특송");
-    chunks.push("특송 있음");
-  } else {
-    chunks.push("\n### 특송");
-    chunks.push("확인 필요");
-  }
+  // 광고: 첫 줄 환영 문구 + 안내 (예전 형식과 호환), 중보기도는 별도 섹션
   chunks.push("\n### 광고");
-  chunks.push(lines(data.announcements).join("\n"));
+  chunks.push([data.welcome, ...lines(data.notices)].join("\n"));
+  if (lines(data.prayerRequests).length) {
+    chunks.push("\n### 중보기도");
+    chunks.push(lines(data.prayerRequests).join("\n"));
+  }
   chunks.push("\n### 성경본문");
   chunks.push(normalizeScripture(data.scripture));
   chunks.push(optionLine());
@@ -266,14 +375,23 @@ export function parseMaterialText(text: string, base: MaterialData = EMPTY): Mat
   if (sections["찬송-4"] !== undefined) next.hymnFour = sections["찬송-4"];
   if (sections["기도"] !== undefined) next.prayer = sections["기도"];
   if (sections["축도"] !== undefined) next.benediction = sections["축도"];
-  if (sections["광고"] !== undefined) next.announcements = sections["광고"];
   if (sections["설교"] !== undefined) next.sermonTitle = sections["설교"];
   next.notes = sections["추가 요청"] ?? "";
 
-  if (sections["특송 슬라이드 제거"] !== undefined) {
-    next.specialSong = "remove";
-  } else if (sections["특송"] !== undefined) {
-    next.specialSong = /확인/.test(sections["특송"]) ? "none" : "keep";
+  // 광고: "### 중보기도"가 있으면 새 형식, 없으면 한 덩어리를 나눈다
+  if (sections["광고"] !== undefined) {
+    if (sections["중보기도"] !== undefined) {
+      const all = lines(sections["광고"]);
+      next.welcome = all.length && /환영/.test(all[0]) ? all.shift()! : "";
+      next.notices = all.join("\n");
+      next.prayerRequests = lines(sections["중보기도"]).join("\n");
+    } else {
+      const split = splitLegacyAnnouncements(sections["광고"]);
+      next.welcome = split.welcome;
+      next.notices = split.notices;
+      next.prayerRequests = split.prayerRequests;
+    }
+    next.announcements = ""; // composeAnnouncements가 다시 합친다
   }
 
   // 색·크기 지시 줄은 읽되 값은 쓰지 않는다 — 항상 디자인 규칙(applyDesignRule)으로 정규화
@@ -314,6 +432,24 @@ export function normalizeScripture(value: string): string {
 }
 
 /* ------------------------------------------------------------------ */
+/* 찬송가 번호 → 제목 (입력 즉시 확인용)                                 */
+/* ------------------------------------------------------------------ */
+
+export type HymnEntry = { no: number; title: string };
+
+/**
+ * "250장", "250장 1절만", "270장 변찮는 주님의" 등에서 장 번호를 뽑아 제목을 돌려준다.
+ * 번호가 없으면 null, 목록에 없는 번호면 { no, title: "" }.
+ */
+export function hymnLookup(value: string, hymns: HymnEntry[]): { no: number; title: string } | null {
+  const m = (value ?? "").match(/(\d{1,3})\s*장/);
+  if (!m) return null;
+  const no = Number(m[1]);
+  const hit = hymns.find((h) => h.no === no);
+  return { no, title: hit?.title ?? "" };
+}
+
+/* ------------------------------------------------------------------ */
 /* 검증                                                                */
 /* ------------------------------------------------------------------ */
 
@@ -342,6 +478,16 @@ export function validate(data: MaterialData): Issue[] {
 
   REQUIRED.forEach(([label, field]) => {
     if (!data[field]?.trim()) issues.push(["danger", `${label} 항목이 비어 있습니다.`]);
+  });
+
+  if (data.serviceType === "주일오전예배" && data.serviceDate && !isSunday(data.serviceDate)) {
+    issues.push(["danger", `예배 날짜 ${data.serviceDate}는 주일이 아닙니다. 파일명이 이 날짜로 저장됩니다.`]);
+  }
+
+  lines(data.prayerRequests).forEach((l) => {
+    if (!PRAYER_LINE.test(l)) {
+      issues.push(["warn", `중보기도 "${l.slice(0, 12)}…"는 "이름 — 내용" 꼴이 아닙니다.`]);
+    }
   });
 
   if (lines(data.praiseMain).length < 2) {
@@ -434,9 +580,6 @@ export function toBulletin(data: MaterialData): Bulletin {
   if (data.prayer?.trim()) {
     order.push({ label: "기 도", content: "", who: data.prayer.trim() });
   }
-  if (data.specialSong === "keep") {
-    order.push({ label: "특 송", content: "", who: "" });
-  }
   if (data.scripture?.trim()) {
     order.push({ label: "성경봉독", content: normalizeScripture(data.scripture), who: "다 같이" });
   }
@@ -454,6 +597,9 @@ export function toBulletin(data: MaterialData): Bulletin {
     scripture: normalizeScripture(data.scripture ?? ""),
     sermonTitle: data.sermonTitle?.trim() ?? "",
     order,
-    announcements: lines(data.announcements),
+    announcements: [
+      ...lines(data.notices),
+      ...lines(data.prayerRequests).map((l) => `중보기도 · ${l}`),
+    ],
   };
 }
