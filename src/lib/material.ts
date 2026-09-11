@@ -9,8 +9,10 @@
 export const FIELDS = [
   "serviceDate",
   "serviceType",
+  "leader", // 인도자 (표지)
   "praiseMain",
   "offeringHymn",
+  "offeringPrayer", // 헌금기도
   "hymnThree",
   "hymnFour",
   "specialSong",
@@ -18,6 +20,7 @@ export const FIELDS = [
   "prayer",
   "scripture",
   "sermonTitle",
+  "benediction", // 축도
   "announcements",
   "notes",
   "rrFontSize",
@@ -31,21 +34,39 @@ export const FIELDS = [
 export type FieldName = (typeof FIELDS)[number];
 export type MaterialData = Record<FieldName, string>;
 
+/** 담임목사. 인도자·헌금기도·축도 기본값. */
+export const DEFAULT_PASTOR = "김삼열 목사";
+
 /**
- * PPT 디자인(worship_design.py, 2026-08-23 수정본 기준)과 동일한 값.
- * 연회색 배경(#ECF0F5)에서 읽히는 색이어야 한다 — 밝은 노랑(#ffd966) 계열은 대비 1.7:1로 안 보임.
+ * 색·글자크기는 PPT 디자인 규칙(worship_design.py, 2026-08-23 수정본 기준)이 정한다.
+ * 폼에서 바꾸는 값이 아니라 고정 상수다.
+ *
+ *  - 홀수절 검정(#0F172A), 짝수절 주황(#C2410C), 마지막 절 황금(#B8860B), 44pt
+ *  - 밝은 노랑·황금(#ffd966, #f7ab08 …)은 연회색 배경(#ECF0F5)에서 대비 1.7:1 — 안 보인다
+ *  - 6주 운영에서 "홀수절 주황/짝수절 검정" 등 뒤집힌 지시가 들어왔다가 되돌린 적이 있어
+ *    사용자 입력값은 저장 시 항상 이 값으로 정규화한다.
  */
-export const OPTION_DEFAULTS = {
+export const DESIGN_RULE = {
   fontSize: "44",
   oddColor: "#0F172A",
   evenColor: "#C2410C",
+  lastColor: "#B8860B",
+} as const;
+
+/** @deprecated DESIGN_RULE 사용 */
+export const OPTION_DEFAULTS = {
+  fontSize: DESIGN_RULE.fontSize,
+  oddColor: DESIGN_RULE.oddColor,
+  evenColor: DESIGN_RULE.evenColor,
 };
 
 export const EMPTY: MaterialData = {
   serviceDate: "",
   serviceType: "주일오전예배",
+  leader: DEFAULT_PASTOR,
   praiseMain: "",
-  offeringHymn: "",
+  offeringHymn: "43장 1절만",
+  offeringPrayer: DEFAULT_PASTOR,
   hymnThree: "",
   hymnFour: "",
   specialSong: "remove",
@@ -53,15 +74,32 @@ export const EMPTY: MaterialData = {
   prayer: "",
   scripture: "",
   sermonTitle: "",
+  benediction: DEFAULT_PASTOR,
   announcements: "",
   notes: "",
-  rrFontSize: OPTION_DEFAULTS.fontSize,
-  rrOddColor: OPTION_DEFAULTS.oddColor,
-  rrEvenColor: OPTION_DEFAULTS.evenColor,
-  scriptureFontSize: OPTION_DEFAULTS.fontSize,
-  scriptureOddColor: OPTION_DEFAULTS.oddColor,
-  scriptureEvenColor: OPTION_DEFAULTS.evenColor,
+  rrFontSize: DESIGN_RULE.fontSize,
+  rrOddColor: DESIGN_RULE.oddColor,
+  rrEvenColor: DESIGN_RULE.evenColor,
+  scriptureFontSize: DESIGN_RULE.fontSize,
+  scriptureOddColor: DESIGN_RULE.oddColor,
+  scriptureEvenColor: DESIGN_RULE.evenColor,
 };
+
+/** 색·크기 필드를 디자인 규칙 값으로 강제한다. 저장·불러오기 양쪽에서 호출. */
+export function applyDesignRule(data: MaterialData): MaterialData {
+  return {
+    ...data,
+    rrFontSize: DESIGN_RULE.fontSize,
+    rrOddColor: DESIGN_RULE.oddColor,
+    rrEvenColor: DESIGN_RULE.evenColor,
+    scriptureFontSize: DESIGN_RULE.fontSize,
+    scriptureOddColor: DESIGN_RULE.oddColor,
+    scriptureEvenColor: DESIGN_RULE.evenColor,
+    leader: data.leader?.trim() || DEFAULT_PASTOR,
+    offeringPrayer: data.offeringPrayer?.trim() || DEFAULT_PASTOR,
+    benediction: data.benediction?.trim() || DEFAULT_PASTOR,
+  };
+}
 
 export const SAMPLE: MaterialData = {
   ...EMPTY,
@@ -74,7 +112,7 @@ export const SAMPLE: MaterialData = {
   specialSong: "remove",
   responsiveReading: "교독문 64. 시편 148편",
   prayer: "김순규 장로",
-  scripture: "고린도전서 8장 1절 ~ 13절",
+  scripture: "고린도전서 8장 1-13절",
   sermonTitle: "자유와 사랑",
   announcements: "예배 후 여전도회 월례회가 본당에서 있습니다.\n7.21-24일 김삼열 목사 휴가",
 };
@@ -126,12 +164,9 @@ export function formatKoreanDate(serviceDate: string): string {
 /* 자료 텍스트 생성                                                     */
 /* ------------------------------------------------------------------ */
 
-function optionLine(fontSize: string, oddColor: string, evenColor: string): string {
-  const options: string[] = [];
-  if (fontSize) options.push(`글자크기 ${fontSize}`);
-  if (oddColor) options.push(`홀수절 ${oddColor}`);
-  if (evenColor) options.push(`짝수절 ${evenColor}`);
-  return options.length ? options.join(", ") + "." : "";
+/** 색·크기 지시 줄. 입력값과 무관하게 디자인 규칙을 적는다 (PPT 쪽 규칙과 문서상 일치). */
+function optionLine(): string {
+  return `글자크기 ${DESIGN_RULE.fontSize}, 홀수절 ${DESIGN_RULE.oddColor}, 짝수절 ${DESIGN_RULE.evenColor}, 마지막절 ${DESIGN_RULE.lastColor}.`;
 }
 
 function numberedBlock(text: string): string {
@@ -141,15 +176,20 @@ function numberedBlock(text: string): string {
     .join("\n");
 }
 
-export function buildMaterial(data: MaterialData): string {
+export function buildMaterial(raw: MaterialData): string {
+  const data = applyDesignRule(raw);
   const chunks: string[] = [];
-  chunks.push("### 찬양");
+  chunks.push("### 인도자");
+  chunks.push(data.leader);
+  chunks.push("\n### 찬양");
   chunks.push(numberedBlock(data.praiseMain));
   chunks.push("\n### 찬송-2 (봉헌찬송)");
   chunks.push(data.offeringHymn);
+  chunks.push("\n### 헌금기도");
+  chunks.push(data.offeringPrayer);
   chunks.push("\n### 교독문");
   chunks.push(data.responsiveReading);
-  chunks.push(optionLine(data.rrFontSize, data.rrOddColor, data.rrEvenColor));
+  chunks.push(optionLine());
   chunks.push("\n### 찬송-3");
   chunks.push(data.hymnThree);
   chunks.push("\n### 기도");
@@ -166,14 +206,14 @@ export function buildMaterial(data: MaterialData): string {
   chunks.push("\n### 광고");
   chunks.push(lines(data.announcements).join("\n"));
   chunks.push("\n### 성경본문");
-  chunks.push(data.scripture);
-  chunks.push(
-    optionLine(data.scriptureFontSize, data.scriptureOddColor, data.scriptureEvenColor),
-  );
+  chunks.push(normalizeScripture(data.scripture));
+  chunks.push(optionLine());
   chunks.push("\n### 설교");
   chunks.push(data.sermonTitle);
   chunks.push("\n### 찬송-4");
   chunks.push(data.hymnFour);
+  chunks.push("\n### 축도");
+  chunks.push(data.benediction);
   if (data.notes) {
     chunks.push("\n### 추가 요청");
     chunks.push(data.notes);
@@ -213,27 +253,19 @@ function splitContentAndOption(text: string): { content: string; option: string 
   };
 }
 
-function parseOptionValues(option: string) {
-  const font = option.match(/글자크기\s*(\d+)/);
-  const odd = option.match(/홀수절\s*(#[0-9a-fA-F]{6})/);
-  const even = option.match(/짝수절\s*(#[0-9a-fA-F]{6})/);
-  return {
-    fontSize: font ? font[1] : OPTION_DEFAULTS.fontSize,
-    oddColor: odd ? odd[1] : OPTION_DEFAULTS.oddColor,
-    evenColor: even ? even[1] : OPTION_DEFAULTS.evenColor,
-  };
-}
-
 export function parseMaterialText(text: string, base: MaterialData = EMPTY): MaterialData {
   const sections = sectionMap(text);
   const next: MaterialData = { ...base };
 
+  if (sections["인도자"] !== undefined) next.leader = sections["인도자"];
   if (sections["찬양"] !== undefined) next.praiseMain = stripNumbering(sections["찬양"]);
   if (sections["찬송-2 (봉헌찬송)"] !== undefined)
     next.offeringHymn = sections["찬송-2 (봉헌찬송)"];
+  if (sections["헌금기도"] !== undefined) next.offeringPrayer = sections["헌금기도"];
   if (sections["찬송-3"] !== undefined) next.hymnThree = sections["찬송-3"];
   if (sections["찬송-4"] !== undefined) next.hymnFour = sections["찬송-4"];
   if (sections["기도"] !== undefined) next.prayer = sections["기도"];
+  if (sections["축도"] !== undefined) next.benediction = sections["축도"];
   if (sections["광고"] !== undefined) next.announcements = sections["광고"];
   if (sections["설교"] !== undefined) next.sermonTitle = sections["설교"];
   next.notes = sections["추가 요청"] ?? "";
@@ -244,25 +276,41 @@ export function parseMaterialText(text: string, base: MaterialData = EMPTY): Mat
     next.specialSong = /확인/.test(sections["특송"]) ? "none" : "keep";
   }
 
+  // 색·크기 지시 줄은 읽되 값은 쓰지 않는다 — 항상 디자인 규칙(applyDesignRule)으로 정규화
   if (sections["교독문"] !== undefined) {
-    const parsed = splitContentAndOption(sections["교독문"]);
-    next.responsiveReading = parsed.content;
-    const opt = parseOptionValues(parsed.option);
-    next.rrFontSize = opt.fontSize;
-    next.rrOddColor = opt.oddColor;
-    next.rrEvenColor = opt.evenColor;
+    next.responsiveReading = splitContentAndOption(sections["교독문"]).content;
   }
 
   if (sections["성경본문"] !== undefined) {
-    const parsed = splitContentAndOption(sections["성경본문"]);
-    next.scripture = parsed.content;
-    const opt = parseOptionValues(parsed.option);
-    next.scriptureFontSize = opt.fontSize;
-    next.scriptureOddColor = opt.oddColor;
-    next.scriptureEvenColor = opt.evenColor;
+    next.scripture = splitContentAndOption(sections["성경본문"]).content;
   }
 
-  return next;
+  return applyDesignRule(next);
+}
+
+/* ------------------------------------------------------------------ */
+/* 교독문 / 성경본문 표기 정규화                                         */
+/* ------------------------------------------------------------------ */
+
+/**
+ * 교독문 select 값("65|시편 149편") 또는 자유 입력을 "교독문 65. 시편 149편"으로.
+ * 번호와 편 제목을 같이 적어두면 PPT 쪽에서 docx 번호와 대조해 불일치를 잡을 수 있다.
+ */
+export function formatResponsiveReading(value: string): string {
+  const v = (value ?? "").trim();
+  const m = v.match(/^(\d{1,3})\|(.+)$/);
+  if (m) return `교독문 ${m[1]}. ${m[2].trim()}`;
+  return v;
+}
+
+/** "고린도전서 13장 1절~13절" / "1 ~ 13절" / "14~33절" 등 → 일관 표기 "고린도전서 13장 1-13절" */
+export function normalizeScripture(value: string): string {
+  const v = (value ?? "").trim().replace(/\s+/g, " ");
+  const m = v.match(/^(.+?)\s*(\d+)\s*장\s*(\d+)\s*절?\s*[~\-–]\s*(\d+)\s*절?$/);
+  if (m) return `${m[1].trim()} ${m[2]}장 ${m[3]}-${m[4]}절`;
+  const single = v.match(/^(.+?)\s*(\d+)\s*장\s*(\d+)\s*절$/);
+  if (single) return `${single[1].trim()} ${single[2]}장 ${single[3]}절`;
+  return v;
 }
 
 /* ------------------------------------------------------------------ */
@@ -321,8 +369,13 @@ export function validate(data: MaterialData): Issue[] {
     issues.push(["warn", "작업 지시문처럼 보이는 문장이 포함되어 있습니다. 자료 본문인지 확인하세요."]);
   }
 
-  if (!/(장|서)\s*\d+장\s*\d+절/.test(data.scripture ?? "")) {
-    issues.push(["warn", "성경본문 형식이 자동 조회에 애매할 수 있습니다. 예: 고린도전서 8장 1절 ~ 13절"]);
+  // "고린도전서 13장 1-13절", "시편 23편 1-6절" 둘 다 허용
+  if (!/\S+\s*\d+\s*[장편]\s*\d+\s*(-\s*\d+)?\s*절/.test(normalizeScripture(data.scripture ?? ""))) {
+    issues.push(["warn", "성경본문 형식이 자동 조회에 애매할 수 있습니다. 예: 고린도전서 13장 1-13절"]);
+  }
+
+  if (data.responsiveReading && !/^교독문\s*\d{1,3}\.\s*\S/.test(data.responsiveReading.trim())) {
+    issues.push(["warn", "교독문은 목록에서 골라 '교독문 65. 시편 149편' 형식이어야 번호 불일치를 막을 수 있습니다."]);
   }
 
   if (!issues.length) {
@@ -366,6 +419,12 @@ export function toBulletin(data: MaterialData): Bulletin {
   if (praise.length) {
     order.push({ label: "찬 양", content: praise.join(" · "), who: "찬양팀" });
   }
+  // 아래 순서는 실제 PPT 슬라이드 순서(worship_design 조립 순서)와 동일하게 유지한다.
+  order.push({ label: "사도신경", content: "", who: "다 같이" });
+  if (data.offeringHymn?.trim()) {
+    order.push({ label: "봉헌찬송", content: data.offeringHymn.trim(), who: "다 같이" });
+  }
+  order.push({ label: "헌금기도", content: "", who: data.offeringPrayer?.trim() || DEFAULT_PASTOR });
   if (data.responsiveReading?.trim()) {
     order.push({ label: "교 독 문", content: data.responsiveReading.trim(), who: "다 같이" });
   }
@@ -379,23 +438,20 @@ export function toBulletin(data: MaterialData): Bulletin {
     order.push({ label: "특 송", content: "", who: "" });
   }
   if (data.scripture?.trim()) {
-    order.push({ label: "성경봉독", content: data.scripture.trim(), who: "다 같이" });
+    order.push({ label: "성경봉독", content: normalizeScripture(data.scripture), who: "다 같이" });
   }
   if (data.sermonTitle?.trim()) {
-    order.push({ label: "설 교", content: data.sermonTitle.trim(), who: "" });
-  }
-  if (data.offeringHymn?.trim()) {
-    order.push({ label: "봉헌찬송", content: data.offeringHymn.trim(), who: "다 같이" });
+    order.push({ label: "설 교", content: data.sermonTitle.trim(), who: data.leader?.trim() || DEFAULT_PASTOR });
   }
   if (data.hymnFour?.trim()) {
     order.push({ label: "찬 송", content: data.hymnFour.trim(), who: "다 같이" });
   }
-  order.push({ label: "축 도", content: "", who: "" });
+  order.push({ label: "축 도", content: "", who: data.benediction?.trim() || DEFAULT_PASTOR });
 
   return {
     serviceType: data.serviceType || "주일오전예배",
     dateLabel: formatKoreanDate(data.serviceDate),
-    scripture: data.scripture?.trim() ?? "",
+    scripture: normalizeScripture(data.scripture ?? ""),
     sermonTitle: data.sermonTitle?.trim() ?? "",
     order,
     announcements: lines(data.announcements),

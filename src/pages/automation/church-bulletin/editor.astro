@@ -88,28 +88,59 @@ export const prerender = true;
                   <option>주일학교</option>
                 </select>
               </div>
+              <div>
+                <label for="leader" class="block text-xs text-gray-500 mb-1">인도자 (표지)</label>
+                <input id="leader" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="offeringPrayer" class="block text-xs text-gray-500 mb-1">헌금기도</label>
+                <input id="offeringPrayer" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="prayer" class="block text-xs text-gray-500 mb-1">대표기도</label>
+                <input id="prayer" placeholder="예: 김순규 장로" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="benediction" class="block text-xs text-gray-500 mb-1">축도</label>
+                <input id="benediction" list="pastorList" placeholder="김삼열 목사" class="w-full border rounded-lg px-3 py-2 text-sm" />
+              </div>
             </div>
+            <datalist id="pastorList"><option value="김삼열 목사"></option></datalist>
           </section>
 
           <section class="card rounded-2xl">
             <h3 class="font-semibold">찬양팀</h3>
             <div class="mt-3 grid gap-4 md:grid-cols-2">
-              <div class="md:col-span-2">
-                <label for="praiseMain" class="block text-xs text-gray-500 mb-1">찬양 (한 줄에 한 곡씩)</label>
-                <textarea id="praiseMain" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
-                <p class="mt-1 text-xs text-gray-500">자동으로 1, 2, 3 순서 번호가 붙습니다.</p>
+              <div class="md:col-span-2 grid gap-2 md:grid-cols-2">
+                <div>
+                  <label for="praise1" class="block text-xs text-gray-500 mb-1">찬양 1</label>
+                  <input id="praise1" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="praise2" class="block text-xs text-gray-500 mb-1">찬양 2</label>
+                  <input id="praise2" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="praise3" class="block text-xs text-gray-500 mb-1">찬양 3</label>
+                  <input id="praise3" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <div>
+                  <label for="praise4" class="block text-xs text-gray-500 mb-1">찬양 4</label>
+                  <input id="praise4" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                </div>
+                <p class="md:col-span-2 text-xs text-gray-500">찬양PPT 폴더에 있는 악보 이름이 자동완성됩니다. 찬송가는 "270장" 처럼 장 번호로 적어도 됩니다.</p>
               </div>
               <div>
                 <label for="offeringHymn" class="block text-xs text-gray-500 mb-1">찬송-2 / 봉헌찬송</label>
-                <input id="offeringHymn" placeholder="예: 43장 1절만" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="offeringHymn" list="hymnList" autocomplete="off" placeholder="예: 43장 1절만" class="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
               <div>
                 <label for="hymnThree" class="block text-xs text-gray-500 mb-1">찬송-3</label>
-                <input id="hymnThree" placeholder="예: 315장" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="hymnThree" list="hymnList" autocomplete="off" placeholder="예: 315장" class="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
               <div>
                 <label for="hymnFour" class="block text-xs text-gray-500 mb-1">찬송-4</label>
-                <input id="hymnFour" placeholder="예: 288장" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="hymnFour" list="hymnList" autocomplete="off" placeholder="예: 288장" class="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
               <div>
                 <label for="specialSong" class="block text-xs text-gray-500 mb-1">특송</label>
@@ -120,60 +151,38 @@ export const prerender = true;
                 </select>
               </div>
             </div>
+            <datalist id="songList"></datalist>
+            <datalist id="hymnList"></datalist>
           </section>
 
           <section class="card rounded-2xl">
-            <h3 class="font-semibold">예배 순서</h3>
+            <h3 class="font-semibold">말씀</h3>
             <div class="mt-3 grid gap-4 md:grid-cols-2">
               <div>
-                <label for="responsiveReading" class="block text-xs text-gray-500 mb-1">교독문</label>
-                <input id="responsiveReading" placeholder="예: 교독문 64. 시편 148편" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <label for="rrSelect" class="block text-xs text-gray-500 mb-1">교독문</label>
+                <select id="rrSelect" class="w-full border rounded-lg px-3 py-2 text-sm">
+                  <option value="">— 교독문 선택 —</option>
+                </select>
+                <input id="responsiveReading" type="hidden" />
+                <p class="mt-1 text-xs text-gray-500">번호와 편이 함께 저장돼 PPT 생성 시 원본과 대조합니다.</p>
               </div>
-              <div>
-                <label for="prayer" class="block text-xs text-gray-500 mb-1">기도</label>
-                <input id="prayer" placeholder="예: 김순규 장로" class="w-full border rounded-lg px-3 py-2 text-sm" />
-              </div>
-              <div class="md:col-span-2 grid grid-cols-3 gap-3">
-                <div>
-                  <label for="rrFontSize" class="block text-xs text-gray-500 mb-1">교독문 글자크기</label>
-                  <input id="rrFontSize" type="number" min="20" max="72" step="1" value="44" class="w-full border rounded-lg px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label for="rrOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
-                  <input id="rrOddColor" type="color" value="#0F172A" class="w-full h-[38px] border rounded-lg px-1 py-1" />
-                </div>
-                <div>
-                  <label for="rrEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
-                  <input id="rrEvenColor" type="color" value="#C2410C" class="w-full h-[38px] border rounded-lg px-1 py-1" />
-                </div>
-              </div>
-            </div>
-          </section>
-
-          <section class="card rounded-2xl">
-            <h3 class="font-semibold">말씀과 설교</h3>
-            <div class="mt-3 grid gap-4 md:grid-cols-2">
               <div>
                 <label for="scripture" class="block text-xs text-gray-500 mb-1">성경본문</label>
-                <input id="scripture" placeholder="예: 고린도전서 8장 1절 ~ 13절" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <input id="scripture" placeholder="예: 고린도전서 13장 1-13절" class="w-full border rounded-lg px-3 py-2 text-sm" />
+                <p class="mt-1 text-xs text-gray-500">"1절~13절", "14 ~ 33절" 어떻게 적어도 "1-13절"로 정리됩니다.</p>
               </div>
-              <div>
+              <div class="md:col-span-2">
                 <label for="sermonTitle" class="block text-xs text-gray-500 mb-1">설교 제목</label>
                 <input id="sermonTitle" placeholder="예: 자유와 사랑" class="w-full border rounded-lg px-3 py-2 text-sm" />
               </div>
-              <div class="md:col-span-2 grid grid-cols-3 gap-3">
-                <div>
-                  <label for="scriptureFontSize" class="block text-xs text-gray-500 mb-1">본문 글자크기</label>
-                  <input id="scriptureFontSize" type="number" min="20" max="72" step="1" value="44" class="w-full border rounded-lg px-3 py-2 text-sm" />
-                </div>
-                <div>
-                  <label for="scriptureOddColor" class="block text-xs text-gray-500 mb-1">홀수절 색상</label>
-                  <input id="scriptureOddColor" type="color" value="#0F172A" class="w-full h-[38px] border rounded-lg px-1 py-1" />
-                </div>
-                <div>
-                  <label for="scriptureEvenColor" class="block text-xs text-gray-500 mb-1">짝수절 색상</label>
-                  <input id="scriptureEvenColor" type="color" value="#C2410C" class="w-full h-[38px] border rounded-lg px-1 py-1" />
-                </div>
+              <div class="md:col-span-2 rounded-lg border border-dashed px-4 py-3 text-xs text-gray-600 dark:text-gray-300 dark:border-white/20">
+                <b>교독문·말씀봉독 슬라이드 서식은 고정입니다.</b>
+                글자 44pt ·
+                <span style="color:#0F172A;font-weight:600">홀수절 검정</span> ·
+                <span style="color:#C2410C;font-weight:600">짝수절 주황</span> ·
+                <span style="color:#B8860B;font-weight:600">마지막 절 황금</span> ·
+                말씀봉독 마지막 절 끝에 (다같이).
+                밝은 노랑 계열은 화면에서 보이지 않아 쓰지 않습니다. 바꿔야 하면 추가 요청란에 적어 주세요.
               </div>
             </div>
           </section>
@@ -183,7 +192,8 @@ export const prerender = true;
             <div class="mt-3 grid gap-4">
               <div>
                 <label for="announcements" class="block text-xs text-gray-500 mb-1">광고 (한 줄에 하나씩)</label>
-                <textarea id="announcements" rows="3" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                <textarea id="announcements" rows="4" class="w-full border rounded-lg px-3 py-2 text-sm"></textarea>
+                <p class="mt-1 text-xs text-gray-500">첫 줄 환영 문구 → 안내 사항 → 기도 대상(이름 — 내용) 순으로 적으면 슬라이드 섹션으로 나뉩니다.</p>
               </div>
               <div>
                 <label for="notes" class="block text-xs text-gray-500 mb-1">추가 요청</label>
@@ -210,8 +220,14 @@ export const prerender = true;
     jsonFileNameFor,
     isJsonMaterial,
     dateFromFileName,
+    formatResponsiveReading,
+    normalizeScripture,
+    applyDesignRule,
+    lines,
     type MaterialData,
   } from "../../../lib/material";
+  import kyodokmun from "../../../data/kyodokmun.json";
+  import songs from "../../../data/songs.json";
 
   const TOKEN_KEY = "dshouse_editor_token";
   const DRAFT_KEY = "dshouse_bulletin_draft";
@@ -237,16 +253,75 @@ export const prerender = true;
       const node = el(id);
       if (node) data[id] = node.value;
     });
-    return data;
+    // 찬양 4칸 → 줄바꿈 목록
+    data.praiseMain = [1, 2, 3, 4]
+      .map((n) => (el(`praise${n}`)?.value ?? "").trim())
+      .filter(Boolean)
+      .join("\n");
+    // 교독문 select("65|시편 149편") → "교독문 65. 시편 149편"
+    const rr = el("rrSelect")?.value ?? "";
+    data.responsiveReading = rr ? formatResponsiveReading(rr) : data.responsiveReading;
+    data.scripture = normalizeScripture(data.scripture);
+    return applyDesignRule(data);
   }
 
   /** 데이터 객체 → 폼 */
   function applyData(data: Partial<MaterialData>) {
-    Object.entries(data).forEach(([id, value]) => {
+    const normalized = applyDesignRule({ ...EMPTY, ...data });
+    Object.entries(normalized).forEach(([id, value]) => {
       const node = el(id);
       if (node) node.value = value ?? "";
     });
+    const praise = lines(normalized.praiseMain).map((l) => l.replace(/^(\d+\.\s*)+/, ""));
+    [1, 2, 3, 4].forEach((n) => {
+      const node = el(`praise${n}`);
+      if (node) node.value = praise[n - 1] ?? "";
+    });
+    // "교독문 65. 시편 149편" → select 값
+    const m = (normalized.responsiveReading ?? "").match(/(\d{1,3})\./);
+    const sel = el("rrSelect") as HTMLSelectElement | null;
+    if (sel) {
+      const no = m ? Number(m[1]) : 0;
+      const opt = [...sel.options].find((o) => o.value.startsWith(`${no}|`));
+      sel.value = opt ? opt.value : "";
+    }
     render();
+  }
+
+  /** 교독문·곡 목록을 select/datalist에 채운다 (한 번만). */
+  function fillLists() {
+    const sel = el("rrSelect") as HTMLSelectElement;
+    if (sel && sel.options.length <= 1) {
+      (kyodokmun as { no: number; title: string; verses: number }[]).forEach((k) => {
+        const o = document.createElement("option");
+        o.value = `${k.no}|${k.title}`;
+        o.textContent = `${k.no}. ${k.title} (${k.verses}절)`;
+        sel.appendChild(o);
+      });
+    }
+    const songList = document.getElementById("songList");
+    const hymnList = document.getElementById("hymnList");
+    const data = songs as { hymns: { no: number; title: string }[]; ccm: string[] };
+    if (songList && !songList.children.length) {
+      data.hymns.forEach((h) => {
+        const o = document.createElement("option");
+        o.value = `${h.no}장 ${h.title}`;
+        songList.appendChild(o);
+      });
+      data.ccm.forEach((t) => {
+        const o = document.createElement("option");
+        o.value = t;
+        songList.appendChild(o);
+      });
+    }
+    if (hymnList && !hymnList.children.length) {
+      data.hymns.forEach((h) => {
+        const o = document.createElement("option");
+        o.value = `${h.no}장`;
+        o.label = h.title;
+        hymnList.appendChild(o);
+      });
+    }
   }
 
   function updateStatus(data: MaterialData) {
@@ -429,7 +504,8 @@ export const prerender = true;
   }
 
   // --- 이벤트 바인딩 ---
-  FIELDS.forEach((id) => {
+  fillLists();
+  [...FIELDS, "praise1", "praise2", "praise3", "praise4", "rrSelect"].forEach((id) => {
     const node = el(id);
     if (!node) return;
     node.addEventListener("input", render);

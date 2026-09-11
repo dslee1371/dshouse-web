@@ -1,0 +1,130 @@
+<!--
+제목: pptx 자동 생성에서 6주간 밟은 지뢰 — OneDrive 온라인 전용 파일, LibreOffice 빈 PDF, python-pptx 글자 넘침, 렌더 캐시
+라벨: 자동화, python-pptx, LibreOffice, OneDrive, macOS, 트러블슈팅
+이미지 업로드: img/06-contrast.png, img/03-scripture-last.png
+-->
+
+<p>앞 글에서 예배 PPT 자동 생성 파이프라인의 구조를 정리했습니다. 이 글은 그 파이프라인을 6주간 매주 돌리면서 실제로 걸린 문제들입니다. 하나하나는 사소한데, 각각 한 주씩 잡아먹었습니다. 재현 조건과 확인 방법 위주로 적습니다.</p>
+
+<h2>1. OneDrive 온라인 전용 파일은 스크립트에서 못 읽는다</h2>
+
+<p>악보 812개가 든 폴더가 OneDrive 안에 있습니다. 어느 날 갑자기 모든 파일이 읽기 실패했습니다.</p>
+
+<pre><code>OSError: [Errno 35] Resource deadlock avoided
+</code></pre>
+
+<p><code>os.path.getsize()</code>는 정상 크기를 돌려주고 <code>os.listdir()</code>도 잘 됩니다. 열어서 읽을 때만 실패합니다. 원인은 OneDrive의 <b>Files On-Demand</b>(온라인 전용)입니다. 오래 안 열어본 파일은 실체가 로컬에서 지워지고 자리표시자만 남는데, macOS Finder에서 열면 그때 받아오지만 컨테이너·샌드박스 안의 프로세스는 그 다운로드를 일으킬 수 없습니다.</p>
+
+<p>재시도, <code>cp</code>, <code>dd</code>, 다른 API 전부 소용없습니다. 해결은 Finder에서 폴더 우클릭 → <b>"이 기기에 항상 유지"</b> 하나뿐입니다. 코드 쪽에서는 미리 잡아내는 점검만 넣었습니다.</p>
+
+<pre><code>def readable(path):
+    try:
+        with open(path, "rb") as f:
+            f.read(4)
+        return True
+    except OSError:
+        return False
+</code></pre>
+
+<p>4바이트만 읽어도 판별됩니다. 파이프라인 첫 단계에서 이번 주에 쓸 파일만 골라 검사하고, 하나라도 실패하면 나머지를 먼저 만든 뒤 사용자에게 알립니다.</p>
+
+<h2>2. LibreOffice는 못 읽는 파일도 '성공'한다</h2>
+
+<p>1번보다 이게 더 위험합니다. 온라인 전용 파일을 <code>soffice --convert-to pdf</code>에 넘기면 에러가 나지 않습니다. <b>빈 1페이지 PDF를 만들고 exit 0으로 끝납니다.</b> 그 PDF를 PNG로 바꾸면 하얀 슬라이드 한 장이 조용히 들어갑니다.</p>
+
+<p>찬송가 악보는 보통 6~16장이므로, 렌더 결과가 1장이면 무조건 의심해야 합니다. 지금은 렌더 직후 페이지 수를 로그로 남기고 지난주 같은 곡의 페이지 수와 비교합니다. 사람이 볼 때는 ImageMagick <code>montage</code>로 붙여서 한 번에 봅니다.</p>
+
+<pre><code>montage page-*.png -tile 6x -geometry +3+3 -resize 340x sheet.png
+</code></pre>
+
+<h2>3. macOS 파일명은 NFD다</h2>
+
+<p>한글 파일명이 든 OneDrive 폴더에서 bash로 경로를 타이핑하면 "No such file or directory"가 납니다. 눈에는 같은 글자지만 macOS(APFS/HFS+)가 저장한 파일명은 <b>NFD</b>(자모 분리)이고, 터미널이나 코드에 타이핑한 글자는 <b>NFC</b>입니다. 바이트가 다릅니다.</p>
+
+<pre><code>import os, unicodedata
+
+def find(folder, wanted):
+    for f in os.listdir(folder):
+        if unicodedata.normalize("NFC", f) == unicodedata.normalize("NFC", wanted):
+            return os.path.join(folder, f)
+</code></pre>
+
+<p>규칙은 하나입니다. 경로를 문자열로 만들지 말고 <code>listdir</code> 결과를 정규화해서 비교한 뒤 그 원본 문자열을 쓰세요. 이걸 안 지켜서 생긴 2차 사고가 있습니다. <code>glob("250장*")</code>으로 캐시를 지웠다고 생각했는데 NFD 파일명과 매칭이 안 돼 아무것도 안 지워졌고, 다음 단계가 잘린 캐시를 그대로 썼습니다.</p>
+
+<p>같은 이유로 MCP 파일시스템 도구처럼 경로를 문자열로 받는 도구들은 이 폴더에서 "Access denied"를 냅니다. 허용 목록의 경로(NFD)와 넘긴 경로(NFC)가 같아 보여도 다릅니다.</p>
+
+<h2>4. 글자 넘침을 파이썬에서 추정하지 마라</h2>
+
+<p>python-pptx는 텍스트가 상자를 넘치는지 알려주지 않습니다. 처음엔 글자 수로 줄 수를 추정해서 폰트를 줄였는데, 두 가지 문제가 있었습니다.</p>
+
+<ul>
+<li>추정 상수를 LibreOffice 렌더로 잡았는데, LibreOffice는 Malgun Gothic이 없어 대체 폰트로 잽니다. 실제 PowerPoint보다 넓게 계산돼 <b>34pt가 26pt로 과하게</b> 줄었습니다.</li>
+<li>한글은 단어 경계로 줄바꿈되기 때문에 같은 글자 수라도 줄 수가 다릅니다.</li>
+</ul>
+
+<p>해결은 PowerPoint에 맡기는 겁니다. 텍스트 프레임에 <code>TEXT_TO_FIT_SHAPE</code>를 걸면 PowerPoint가 열 때 넘치는 상자만 자동 축소합니다.</p>
+
+<pre><code>from pptx.enum.text import MSO_AUTO_SIZE
+tf = shape.text_frame
+tf.word_wrap = True
+tf.auto_size = MSO_AUTO_SIZE.TEXT_TO_FIT_SHAPE
+</code></pre>
+
+<p>지시한 글자크기는 그대로 두고, 넘치는 슬라이드만 알아서 줄어듭니다. 다만 "두 절이 한 장에 들어가는가"처럼 <b>배치 결정</b>에는 추정이 필요합니다. 이건 상수를 실제 렌더로 보정해서 씁니다. 44pt, 상자 폭 9.72인치 기준으로 한 줄 약 22자, 줄 높이 폰트 크기 × 1.13 — 실측값입니다.</p>
+
+<h2>5. 렌더 캐시가 잘린 파일을 신뢰했다</h2>
+
+<p>이건 실제로 예배 전날 나간 파일에서 발견된 사고입니다. 찬송가 한 곡이 8장인데 5장만 들어갔습니다.</p>
+
+<p>경위는 이렇습니다. 렌더 스크립트가 여러 곡을 순서대로 돌리다가 3번째 곡 중간에 프로세스가 죽었습니다(샌드박스가 호출 단위로 프로세스를 정리함). PNG 5장이 남았고 5번째 파일은 딱 256KB에서 잘려 있었습니다. 다음 실행에서 캐시 로직이 "PNG가 있네" 하고 그대로 반환했습니다.</p>
+
+<p>고친 방법은 <b>완료 마커</b>입니다. 임시 디렉터리에 렌더하고, 전부 끝나야 옮기고, <code>.done</code> 파일을 씁니다. 마커 없는 캐시는 지우고 다시 만듭니다.</p>
+
+<pre><code>done = os.path.join(outdir, f"{safe}.done")
+existing = sorted(glob.glob(os.path.join(outdir, f"{safe}-*.png")))
+if existing and os.path.exists(done):
+    return existing
+for f in existing:          # 불완전 캐시 정리
+    os.remove(f)
+# ... 임시 디렉터리에 렌더 → shutil.move → open(done, "w")
+</code></pre>
+
+<p>그리고 검증에 한 줄을 추가했습니다. PNG는 헤더만 있어도 <code>Image.open()</code>이 성공하므로 <code>.load()</code>까지 해야 잘림이 잡힙니다.</p>
+
+<pre><code>from PIL import Image
+for p in pages:
+    Image.open(p).load()     # 잘린 파일이면 여기서 예외
+</code></pre>
+
+<p>참고로 <code>os.replace()</code>는 <code>/tmp</code>와 마운트 볼륨 사이에서 "Invalid cross-device link"가 납니다. <code>shutil.move()</code>를 쓰세요.</p>
+
+<h2>6. 밝은 배경에 노란 글씨</h2>
+
+<p>기술 문제는 아니지만 매주 반복돼서 적습니다. 원고에 "짝수절 #ffd966"이 오면 그대로 넣고 싶어집니다. 연회색 배경(#ECF0F5)에서 이 색의 대비는 1.7:1입니다. 본당 뒤에서는 안 보입니다.</p>
+
+<div class="separator" style="clear: both; text-align: center;">
+<a href="IMG_06_CONTRAST"><img alt="같은 문장을 네 가지 색으로 배경 위에 놓고 대비를 비교한 이미지" border="0" width="600" src="IMG_06_CONTRAST"/></a>
+</div>
+
+<p>자동화 파이프라인이 <b>사람의 지시를 그대로 따르는 것과 결과를 책임지는 것</b> 사이에서 어디에 설지 정해야 하는 지점입니다. 지금은 규칙으로 못 박았습니다. 밝은 계열이 오면 무조건 #C2410C로 바꾸고, 기존 규칙과 반대되는 요청(홀수·짝수 색을 뒤집는 등)은 그대로 적용하지 않고 먼저 묻습니다. 실제로 한 번 그대로 따랐다가 "순서가 바뀌었다"는 피드백을 받았습니다.</p>
+
+<h2>7. 그 외 짧은 것들</h2>
+
+<ul>
+<li><b>4:3 악보를 16:9에 늘리지 마세요.</b> 파일명에 <code>_Wide</code>가 붙어 있어도 4:3인 경우가 있습니다. 렌더한 PNG의 비율을 보고 판단하고, 다르면 비율 유지해서 가운데 배치합니다.</li>
+<li><b>SVG 아이콘은 python-pptx로 못 넣습니다.</b> 손으로 만든 디자인의 아이콘이 SVG였는데, cairosvg로 PNG로 바꿔 넣었습니다.</li>
+<li><b><code>pkill -f 패턴</code>은 자기 셸도 죽입니다.</b> 셸 명령줄에 패턴이 들어 있으니까요. exit 143을 보고 한참 헤맸습니다.</li>
+<li><b>번호 매기기 이중 적용.</b> 사용자가 "1. 곡명"으로 입력한 줄에 저장 시 번호를 또 붙여 "1. 1. 곡명"이 됐습니다. 4주 동안 매주 4줄씩. 붙이기 전에 <code>^(\d+\.\s*)+</code>로 떼면 됩니다.</li>
+</ul>
+
+<h2>정리</h2>
+
+<p>여섯 개 모두 <b>"성공처럼 보이는 실패"</b>였습니다. 파일 크기는 정상인데 못 읽고, 변환은 exit 0인데 내용이 없고, PNG는 열리는데 잘려 있고, 글자는 있는데 안 보입니다. 자동화 파이프라인에서 진짜 필요한 건 각 단계의 성공 여부가 아니라 <b>결과물을 사람이 볼 형태로 다시 렌더해서 확인하는 마지막 단계</b>였습니다.</p>
+
+<h2>참고 자료</h2>
+<ul>
+<li><a href="https://support.microsoft.com/office/save-disk-space-with-onedrive-files-on-demand-for-mac-529f6d53-e572-4922-a585-e7a318c135f0" target="_blank" rel="noopener">Microsoft: OneDrive Files On-Demand for Mac</a></li>
+<li><a href="https://developer.apple.com/library/archive/qa/qa1173/_index.html" target="_blank" rel="noopener">Apple: Text Encodings in VFS (Unicode NFD)</a></li>
+<li><a href="https://python-pptx.readthedocs.io/en/latest/api/enum/MsoAutoSize.html" target="_blank" rel="noopener">python-pptx: MSO_AUTO_SIZE</a></li>
+<li><a href="https://help.libreoffice.org/latest/en-US/text/shared/guide/start_parameters.html" target="_blank" rel="noopener">LibreOffice: Starting from the command line</a></li>
+</ul>
