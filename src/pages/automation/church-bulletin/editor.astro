@@ -133,28 +133,11 @@ export const prerender = true;
           <section class="card rounded-2xl">
             <h3 class="font-semibold">찬양팀</h3>
             <div class="mt-3 grid gap-4 md:grid-cols-2">
-              <div class="md:col-span-2 grid gap-2 md:grid-cols-2">
-                <div>
-                  <label for="praise1" class="block text-xs text-gray-500 mb-1">찬양 1</label>
-                  <input id="praise1" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
-                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise1"></p>
-                </div>
-                <div>
-                  <label for="praise2" class="block text-xs text-gray-500 mb-1">찬양 2</label>
-                  <input id="praise2" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
-                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise2"></p>
-                </div>
-                <div>
-                  <label for="praise3" class="block text-xs text-gray-500 mb-1">찬양 3</label>
-                  <input id="praise3" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
-                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise3"></p>
-                </div>
-                <div>
-                  <label for="praise4" class="block text-xs text-gray-500 mb-1">찬양 4</label>
-                  <input id="praise4" list="songList" autocomplete="off" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20" />
-                  <p class="hint mt-1 text-xs min-h-[1rem]" data-hint-for="praise4"></p>
-                </div>
-                <p class="md:col-span-2 text-xs text-gray-500">찬양PPT 폴더에 있는 악보 이름이 자동완성됩니다. 찬송가는 "270장" 처럼 장 번호로 적으면 제목이 아래에 뜹니다.</p>
+              <div class="md:col-span-2">
+                <label for="praiseMain" class="block text-xs text-gray-500 mb-1">찬양 (한 줄에 한 곡, 순서대로)</label>
+                <textarea id="praiseMain" rows="4" placeholder="지존하신 주님 이름 앞에&#10;내가 매일 기쁘게&#10;주의 친절한 팔에 안기세&#10;하나님의 음성을" class="w-full border rounded-lg px-3 py-2 text-sm bg-white dark:bg-white/5 dark:border-white/20"></textarea>
+                <ul id="praiseHints" class="mt-1 space-y-0.5 text-xs"></ul>
+                <p class="mt-1 text-xs text-gray-500">번호는 안 붙여도 됩니다. 찬송가는 "270장"처럼 장 번호로 적어도 됩니다. 아래에 악보 파일 확인 결과가 줄마다 표시됩니다.</p>
               </div>
               <div>
                 <label for="offeringHymn" class="block text-xs text-gray-500 mb-1">봉헌찬송 (찬송-2)</label>
@@ -280,7 +263,6 @@ export const prerender = true;
   const afterSave = document.getElementById("afterSave")!;
 
   const songData = songs as { hymns: { no: number; title: string }[]; ccm: string[] };
-  const ccmSet = new Set(songData.ccm.map((t) => t.trim()));
 
   let token = sessionStorage.getItem(TOKEN_KEY) || "";
   let dirty = false;
@@ -299,11 +281,7 @@ export const prerender = true;
       const node = el(id);
       if (node) data[id] = node.value;
     });
-    // 찬양 4칸 → 줄바꿈 목록
-    data.praiseMain = [1, 2, 3, 4]
-      .map((n) => (el(`praise${n}`)?.value ?? "").trim())
-      .filter(Boolean)
-      .join("\n");
+    data.praiseMain = lines(data.praiseMain).map((l) => l.replace(/^(\d+\.\s*)+/, "")).join("\n");
     // 교독문 select("65|시편 149편") → "교독문 65. 시편 149편"
     const rr = el("rrSelect")?.value ?? "";
     data.responsiveReading = rr ? formatResponsiveReading(rr) : data.responsiveReading;
@@ -319,11 +297,9 @@ export const prerender = true;
       const node = el(id);
       if (node) node.value = value ?? "";
     });
-    const praise = lines(normalized.praiseMain).map((l) => l.replace(/^(\d+\.\s*)+/, ""));
-    [1, 2, 3, 4].forEach((n) => {
-      const node = el(`praise${n}`);
-      if (node) node.value = praise[n - 1] ?? "";
-    });
+    el("praiseMain").value = lines(normalized.praiseMain)
+      .map((l) => l.replace(/^(\d+\.\s*)+/, ""))
+      .join("\n");
     // "교독문 65. 시편 149편" → select 값
     const m = (normalized.responsiveReading ?? "").match(/(\d{1,3})\./);
     const sel = el("rrSelect") as HTMLSelectElement | null;
@@ -389,16 +365,49 @@ export const prerender = true;
         }
         return;
       }
-      if (id.startsWith("praise")) {
-        if (ccmSet.has(value)) {
-          hint.textContent = "✓ 악보 있음";
-          hint.classList.add("text-emerald-700", "dark:text-emerald-300");
+    });
+    renderPraiseHints();
+  }
+
+  /** 띄어쓰기·번호를 무시하고 비교 (예: "주의친절한 팔에 안기세" ↔ "주의 친절한 팔에 안기세") */
+  const squash = (t: string) => t.replace(/^(\d+\.\s*)+/, "").replace(/[\s·,.!?()\-_]/g, "").toLowerCase();
+  const songIndex = [
+    ...songData.ccm.map((t) => ({ label: t, key: squash(t) })),
+    ...songData.hymns.map((h) => ({ label: `${h.no}장 ${h.title}`, key: squash(h.title) })),
+  ];
+
+  /** 찬양 textarea 줄마다 악보 파일 존재 여부 표시 */
+  function renderPraiseHints() {
+    const ul = document.getElementById("praiseHints");
+    if (!ul) return;
+    ul.innerHTML = "";
+    lines(el("praiseMain").value).forEach((raw, i) => {
+      const li = document.createElement("li");
+      const value = raw.replace(/^(\d+\.\s*)+/, "").trim();
+      const hit = hymnLookup(value, songData.hymns);
+      let text = "";
+      let cls = "text-gray-500";
+      if (hit) {
+        text = hit.title ? `♪ ${hit.no}장 ${hit.title}` : `찬송가 ${hit.no}장은 목록에 없습니다. 번호를 확인하세요.`;
+        cls = hit.title ? "text-emerald-700 dark:text-emerald-300" : "text-red-500";
+      } else {
+        const k = squash(value);
+        const exact = songIndex.find((s) => s.key === k);
+        const near = exact ?? (k.length >= 3 ? songIndex.find((s) => s.key.includes(k) || k.includes(s.key)) : undefined);
+        if (exact) {
+          text = `✓ ${exact.label}`;
+          cls = "text-emerald-700 dark:text-emerald-300";
+        } else if (near) {
+          text = `≈ ${near.label} (비슷한 악보, PPT 생성 시 이 파일을 씁니다)`;
+          cls = "text-emerald-700 dark:text-emerald-300";
         } else {
-          const near = songData.ccm.find((t) => t.includes(value) || value.includes(t));
-          hint.textContent = near ? `비슷한 악보: ${near}` : "악보 목록에 없는 이름입니다 (PPT 생성 시 확인 요청됨)";
-          hint.classList.add(near ? "text-amber-600" : "text-amber-600");
+          text = "악보 목록에 없는 이름입니다 — PPT 생성 시 확인 요청됩니다";
+          cls = "text-amber-600";
         }
       }
+      li.className = cls;
+      li.textContent = `${i + 1}. ${value} — ${text}`;
+      ul.appendChild(li);
     });
   }
 
@@ -694,7 +703,7 @@ export const prerender = true;
     afterSave.classList.add("hidden");
     setDirty(true);
     saveStatus.textContent = `${formatKoreanDate(next.serviceDate)} 자료를 새로 시작했습니다. 인도자·헌금기도·축도·봉헌찬송·환영 문구만 유지됩니다.`;
-    el("praise1").focus();
+    el("praiseMain").focus();
   }
 
   /** 주보 인쇄뷰 열기 — 현재 입력값을 그대로 넘깁니다(저장 여부와 무관). */
@@ -713,7 +722,7 @@ export const prerender = true;
 
   // --- 이벤트 바인딩 ---
   fillLists();
-  [...FIELDS, "praise1", "praise2", "praise3", "praise4", "rrSelect"].forEach((id) => {
+  [...FIELDS, "rrSelect"].forEach((id) => {
     const node = el(id);
     if (!node || node.type === "hidden") return;
     node.addEventListener("input", onEdit);
